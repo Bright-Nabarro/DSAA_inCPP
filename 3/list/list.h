@@ -64,6 +64,9 @@ template <typename Object> class list
 	iterator insert(iterator itr, Object&& x);
 	iterator erase(iterator itr) noexcept;
 	iterator erase(iterator from, iterator to);
+	// for exercises
+	void swap_adjacent(iterator itr);
+	void swap_adjacent(size_t n);
 	// data members
   private:
 	size_t _size;
@@ -315,6 +318,27 @@ typename list<Object>::iterator list<Object>::erase(iterator from, iterator to)
 	for (iterator itr = from; itr != to;)
 		itr = erase(itr);
 	return to;
+}
+
+template <typename Object>
+void list<Object>::swap_adjacent(iterator itr)
+{
+	//swap itr and itr+1
+	Object ele_1 = *itr;
+	itr = erase(itr);
+	Object ele_2 = *itr;
+	itr = erase(itr);
+	insert(itr, ele_2);
+	insert(itr, ele_1);
+}
+
+template <typename Object>
+void list<Object>::swap_adjacent(size_t n)
+{
+	auto ptr = begin();
+	for(int i = 0; i < n; i++)
+		++ptr;
+	swap_adjacent(ptr);
 }
 
 } // namespace my_adt

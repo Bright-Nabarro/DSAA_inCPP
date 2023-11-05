@@ -1,4 +1,4 @@
-#include "list.h"
+#include "../list/list.h"
 #include "single_list_for_2.h"
 #include <algorithm>
 #include <forward_list>
@@ -30,6 +30,9 @@ int main()
 	std::copy(l1.begin(), l1.end(), std::ostream_iterator<int>(std::cout, " "));
 	std::cout << std::endl;
 
+	std::copy(l2.begin(), l2.end(), std::ostream_iterator<int>(std::cout, " "));
+	std::cout << std::endl;
+	l2.swap_adjacent(5);
 	std::copy(l2.begin(), l2.end(), std::ostream_iterator<int>(std::cout, " "));
 	std::cout << std::endl;
 }

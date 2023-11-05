@@ -25,8 +25,11 @@ template <typename Object> class list
 	class iterator;
 	// method
   public:
+	//normal constructor
 	list() { init(); }
 	list(const std::initializer_list<Object>& inil);
+	template<typename other_iterator>
+	list(other_iterator beg_ptr, other_iterator end_ptr);
 	// the big five
 	list(const list& rhs);
 	list& operator=(const list& rhs);
@@ -234,6 +237,15 @@ list<Object>::list(const std::initializer_list<Object>& inil)
 	init();
 	for(const auto& x: inil)
 		push_back(x);
+}
+
+template <typename Object>
+template <typename other_iterator>
+list<Object>::list(other_iterator beg_ptr, other_iterator end_ptr)
+{
+	init();
+	for(auto ptr = beg_ptr; ptr != end_ptr; ptr++)
+		push_back(*ptr);
 }
 
 // the big five implation

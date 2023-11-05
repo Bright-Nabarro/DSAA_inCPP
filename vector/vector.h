@@ -1,7 +1,7 @@
 #pragma once
 #include <algorithm>
 #include <stdexcept>
-namespace my_adt
+namespace my_stl2
 {
 
 template <typename Object> class vector;

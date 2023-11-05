@@ -2,7 +2,7 @@
 #include <stdexcept>
 #include <utility>
 
-namespace my_adt
+namespace my_stl2
 {
 
 // class list have three nested class
@@ -56,7 +56,7 @@ template <typename Object> class list
 	}
 	void push_front(const Object& x) { insert(begin(), x); }
 	void push_front(Object&& x) { insert(begin(), std::move(x)); }
-	void push_back(const Object& x) { insert(back(), (x)); }
+	void push_back(const Object& x) { insert(end(), (x)); }
 	void push_back(Object&& x) { insert(end(), std::move(x)); }
 	void pop_front() noexcept { erase(begin()); }
 	void pop_back() noexcept { erase(back()); }

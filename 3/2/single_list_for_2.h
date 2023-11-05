@@ -8,7 +8,7 @@
 #include <sstream>
 #include <stdexcept>
 
-namespace myds
+namespace my_stl1
 {
 
 template <typename T> class single_list

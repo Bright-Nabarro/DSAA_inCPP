@@ -1,6 +1,7 @@
 #pragma once
 #include <stdexcept>
 #include <utility>
+#include <initializer_list>
 
 namespace my_stl2
 {
@@ -25,6 +26,7 @@ template <typename Object> class list
 	// method
   public:
 	list() { init(); }
+	list(const std::initializer_list<Object>& inil);
 	// the big five
 	list(const list& rhs);
 	list& operator=(const list& rhs);
@@ -226,8 +228,17 @@ template <typename Object> void list<Object>::init()
 	_tail->_prev = _head;
 }
 
+template <typename Object>
+list<Object>::list(const std::initializer_list<Object>& inil)
+{
+	init();
+	for(const auto& x: inil)
+		push_back(x);
+}
+
 // the big five implation
-template <typename Object> list<Object>::list(const list& rhs)
+template <typename Object> 
+list<Object>::list(const list& rhs)
 {
 	init();
 	for (const auto& x : rhs)

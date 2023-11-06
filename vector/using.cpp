@@ -4,12 +4,8 @@
 int main()
 {
 	using namespace my_stl2;
-	vector<int> v;
-	for(int i = 0; i < 5; i++)
-		v.push_back(i);
-	try{
-		v.at(6);
-	}catch(std::exception& e){
-		std::cout << e.what() << std::endl;
-	}
+	vector<int> vi{1,2,3,4,5,6,7,8,9};
+	for(int x: vi)
+		std::cout << x << " ";
+	std::cout << std::endl;
 }

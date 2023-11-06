@@ -1,6 +1,8 @@
 #pragma once
 #include <algorithm>
+#include <initializer_list>
 #include <stdexcept>
+
 namespace my_stl2
 {
 
@@ -12,8 +14,11 @@ void swap(vector<Object>& v1, vector<Object>& v2) noexcept;
 template <typename Object> class vector
 {
   public:
-	// big five
 	explicit vector(int initSize = 0);
+	vector(const std::initializer_list<Object>& inil);
+	template <typename other_iterator>
+	vector(other_iterator beg_ptr, other_iterator end_ptr);
+	// big five
 	vector(const vector& rhs);
 	vector(vector&& rhs) noexcept;
 	vector& operator=(const vector& rhs);
@@ -65,6 +70,24 @@ vector<Object>::vector(int iniSize)
 	: theSize{iniSize}, theCapacity{iniSize + SPARE_CAPACITY}
 {
 	objects = new Object[theCapacity];
+}
+
+template <typename Object>
+vector<Object>::vector(const std::initializer_list<Object>& inil)
+	: vector(inil.size())
+{
+	auto ptr = begin();
+	for (auto iptr = inil.begin(); iptr != inil.end(); iptr++, ptr++)
+		*ptr = *iptr;
+}
+
+template <typename Object>
+template <typename other_iterator>
+vector<Object>::vector(other_iterator beg_ptr, other_iterator end_ptr)
+{
+	vector();
+	for (auto ptr = beg_ptr; ptr != end_ptr; ptr++)
+		push_back(*ptr);
 }
 
 template <typename Object>
@@ -178,4 +201,4 @@ template <typename Object> void vector<Object>::push_back(const Object&& x)
 
 template <typename Object> void vector<Object>::pop_back() { --theSize; }
 
-} // namespace my_adt
+} // namespace my_stl2

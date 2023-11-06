@@ -3,11 +3,9 @@
 
 int main()
 {
-	using namespace my_adt;
-	vector<int> v(6);
-	for (auto& x : v)
-		x = 114514;
-	for (auto x : v)
+	using namespace my_stl2;
+	vector<int> vi{1,2,3,4,5,6,7,8,9};
+	for(int x: vi)
 		std::cout << x << " ";
-	puts("\n");
+	std::cout << std::endl;
 }

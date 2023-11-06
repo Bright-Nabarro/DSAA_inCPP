@@ -1,7 +1,7 @@
 #pragma once
 #include <algorithm>
-#include <stdexcept>
 #include <initializer_list>
+#include <stdexcept>
 
 namespace my_stl2
 {
@@ -74,17 +74,19 @@ vector<Object>::vector(int iniSize)
 
 template <typename Object>
 vector<Object>::vector(const std::initializer_list<Object>& inil)
+	: vector(inil.size())
 {
-	vector(inil.size());
-	std::copy(inil.begin(), inil.end(), begin());
+	auto ptr = begin();
+	for (auto iptr = inil.begin(); iptr != inil.end(); iptr++, ptr++)
+		*ptr = *iptr;
 }
 
-template<typename Object>
-template<typename other_iterator>
+template <typename Object>
+template <typename other_iterator>
 vector<Object>::vector(other_iterator beg_ptr, other_iterator end_ptr)
 {
 	vector();
-	for(auto ptr = beg_ptr; ptr!=end_ptr; ptr++)
+	for (auto ptr = beg_ptr; ptr != end_ptr; ptr++)
 		push_back(*ptr);
 }
 
@@ -199,4 +201,4 @@ template <typename Object> void vector<Object>::push_back(const Object&& x)
 
 template <typename Object> void vector<Object>::pop_back() { --theSize; }
 
-} // namespace my_adt
+} // namespace my_stl2

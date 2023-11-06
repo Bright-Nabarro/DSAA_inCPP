@@ -268,7 +268,7 @@ list<Object>& list<Object>::operator=(const list& rhs)
 template <typename Object>
 list<Object>::list(list&& rhs) noexcept(
 	std::is_nothrow_move_constructible<Object>::value)
-	: _head{rhs._head}, _tail{rhs._tail}, _size{rhs._size}
+	:_size{rhs._size}, _head{rhs._head}, _tail{rhs._tail}
 {
 	rhs._head = nullptr;
 	rhs._tail = nullptr;

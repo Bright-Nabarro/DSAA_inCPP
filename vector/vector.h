@@ -32,14 +32,7 @@ template <typename Object> class vector
 	const Object& operator[](int index) const;
 	Object& at(int index);
 	const Object& at(int index) const;
-	//常用方法
-	void push_back(const Object& x);
-	void push_back(const Object&& x);
-	void pop_back();
-	Object& front() { return objects[0]; }
-	const Object& front() const { return objects[0]; }
-	Object& back() { return objects[theSize - 1]; }
-	const Object& back() const { return objects[theSize - 1]; }
+
 	//迭代器
 	using iterator = Object*;
 	using const_iterator = const Object*;
@@ -49,6 +42,21 @@ template <typename Object> class vector
 	const_iterator end() const { return &objects[theSize - 1]; }
 	static const int SPARE_CAPACITY = 16;
 
+	//常用方法
+	void push_back(const Object& x);
+	void push_back(const Object&& x);
+	void pop_back();
+	Object& front() { return objects[0]; }
+	const Object& front() const { return objects[0]; }
+	Object& back() { return objects[theSize - 1]; }
+	const Object& back() const { return objects[theSize - 1]; }
+	void insert(iterator itr, const Object& x);
+	void insert(size_t n, const Object& x);
+	void erase(iterator itr);
+	void erase(iterator from, iterator to);
+	void erase(size_t n);
+	void erase(size_t from_index, size_t to_index);
+	
 	friend void swap<Object>(vector<Object>& v1, vector<Object>& v2) noexcept;
 
   private:
@@ -200,5 +208,53 @@ template <typename Object> void vector<Object>::push_back(const Object&& x)
 }
 
 template <typename Object> void vector<Object>::pop_back() { --theSize; }
+
+template <typename Object>
+void vector<Object>::insert(iterator itr, const Object& x)
+{
+	if(theSize == theCapacity)
+		reserve(theSize * 2 + 1);
+	for(auto p = itr+theSize-1; p != itr; p--)
+		*(p+1) = *p;
+	*(itr+1) = x;
+	theSize++;
+}
+
+template <typename Object>
+void vector<Object>::insert(size_t n, const Object& x)
+{
+	iterator itr = begin() + n;
+	insert(itr, x);
+}
+
+template <typename Object>
+void vector<Object>::erase(iterator itr)
+{
+	for(auto p = itr; p != itr+theSize; p++)
+		*p = *(p+1);
+	theSize--;
+}
+
+template <typename Object>
+void vector<Object>::erase(size_t n)
+{
+	iterator itr = begin() + n;
+	erase(itr);
+}
+
+template <typename Object>
+void vector<Object>::erase(iterator from, iterator to)
+{
+	for(auto itr = from; itr != to; itr++)
+		erase(itr);
+}
+
+template <typename Object>
+void vector<Object>::erase(size_t from_index, size_t to_index)
+{
+	iterator from = begin() + from_index, to = begin() + to_index;
+	erase(from, to);
+}
+
 
 } // namespace my_stl2

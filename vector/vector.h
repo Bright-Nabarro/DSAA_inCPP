@@ -151,14 +151,14 @@ const Object& vector<Object>::operator[](int index) const
 template <typename Object> Object& vector<Object>::at(int index)
 {
 	if (index >= theSize)
-		throw std::out_of_range("my_adt vector index is out of range");
+		throw std::out_of_range("my_stl2 vector index is out of range");
 	return objects[index];
 }
 
 template <typename Object> const Object& vector<Object>::at(int index) const
 {
 	if (index >= theSize)
-		throw std::out_of_range("my_adt vector index is out of range");
+		throw std::out_of_range("my_stl2 vector index is out of range");
 	return objects[index];
 }
 

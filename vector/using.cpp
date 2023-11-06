@@ -3,11 +3,13 @@
 
 int main()
 {
-	using namespace my_adt;
-	vector<int> v(6);
-	for (auto& x : v)
-		x = 114514;
-	for (auto x : v)
-		std::cout << x << " ";
-	puts("\n");
+	using namespace my_stl2;
+	vector<int> v;
+	for(int i = 0; i < 5; i++)
+		v.push_back(i);
+	try{
+		v.at(6);
+	}catch(std::exception& e){
+		std::cout << e.what() << std::endl;
+	}
 }

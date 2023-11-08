@@ -1,4 +1,4 @@
-#include "vector.h"
+#include "../vector/vector.h"
 #include <iostream>
 
 int main()
@@ -6,22 +6,22 @@ int main()
 	using namespace my_stl2;
 	vector<int> vi{0,1,2,3,4,5,6,7,8,9};
 
-	vi.erase(4);
+	vi.erase(vi.begin()+4);
 	for(int x: vi)
 		std::cout << x << " ";
 	std::cout << std::endl;
 
-	vi.insert(3,4);
+	vi.insert(vi.begin()+3,4);
 	for(int x: vi)
 		std::cout << x << " ";
 	std::cout << std::endl;
 
-	vi.erase(1,8);
+	vi.erase(vi.begin()+1,vi.begin()+8);
 	for(int x: vi)
 		std::cout << x << " ";
 	std::cout << std::endl;
 
-	vi.erase(static_cast<size_t>(0));
+	vi.erase(vi.begin());
 	for(int x: vi)
 		std::cout << x << " ";
 	std::cout << std::endl;

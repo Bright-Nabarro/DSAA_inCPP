@@ -1,7 +1,7 @@
 #pragma once
+#include <initializer_list>
 #include <stdexcept>
 #include <utility>
-#include <initializer_list>
 
 namespace my_stl2
 {
@@ -16,6 +16,7 @@ template <typename Object> class list
 	// nested class
   private:
 	struct Node;
+
   public:
 	// type information
 	using value_type = Object;
@@ -25,10 +26,10 @@ template <typename Object> class list
 	class iterator;
 	// method
   public:
-	//normal constructor
+	// normal constructor
 	list() { init(); }
 	list(const std::initializer_list<Object>& inil);
-	template<typename other_iterator>
+	template <typename other_iterator>
 	list(other_iterator beg_ptr, other_iterator end_ptr);
 	// the big five
 	list(const list& rhs);
@@ -42,8 +43,10 @@ template <typename Object> class list
 	// itr method
 	iterator begin() { return _head->_next; }
 	const_iterator begin() const { return _head->_next; }
+	const_iterator cbegin() const { return _head->_next; }
 	iterator end() { return _tail; }
 	const_iterator end() const { return _tail; }
+	const_iterator cend() const { return _tail; }
 	// element access
 	Object& front() { return _head->_element; }
 	const Object& front() const { return _head->_element; }
@@ -72,6 +75,7 @@ template <typename Object> class list
 	// for exercises
 	void swap_adjacent(iterator itr);
 	void swap_adjacent(size_t n);
+	void splice(iterator position, list& lst);
 	// data members
   private:
 	size_t _size;
@@ -102,7 +106,7 @@ template <typename Object> class list<Object>::const_iterator
 	friend class list<Object>;
 
   public:
-	//iterator info
+	// iterator info
 	using iterator_category = std::bidirectional_iterator_tag;
 	using value_type = Object;
 	using difference_type = std::ptrdiff_t;
@@ -134,6 +138,7 @@ template <typename Object> class list<Object>::const_iterator
 	{
 		return current != citr.current;
 	}
+	size_t operator-(const_iterator itr);
 
   protected:
 	Node* current;
@@ -235,7 +240,7 @@ template <typename Object>
 list<Object>::list(const std::initializer_list<Object>& inil)
 {
 	init();
-	for(const auto& x: inil)
+	for (const auto& x : inil)
 		push_back(x);
 }
 
@@ -244,13 +249,12 @@ template <typename other_iterator>
 list<Object>::list(other_iterator beg_ptr, other_iterator end_ptr)
 {
 	init();
-	for(auto ptr = beg_ptr; ptr != end_ptr; ptr++)
+	for (auto ptr = beg_ptr; ptr != end_ptr; ptr++)
 		push_back(*ptr);
 }
 
 // the big five implation
-template <typename Object> 
-list<Object>::list(const list& rhs)
+template <typename Object> list<Object>::list(const list& rhs)
 {
 	init();
 	for (const auto& x : rhs)
@@ -268,7 +272,7 @@ list<Object>& list<Object>::operator=(const list& rhs)
 template <typename Object>
 list<Object>::list(list&& rhs) noexcept(
 	std::is_nothrow_move_constructible<Object>::value)
-	:_size{rhs._size}, _head{rhs._head}, _tail{rhs._tail}
+	: _size{rhs._size}, _head{rhs._head}, _tail{rhs._tail}
 {
 	rhs._head = nullptr;
 	rhs._tail = nullptr;
@@ -343,10 +347,9 @@ typename list<Object>::iterator list<Object>::erase(iterator from, iterator to)
 	return to;
 }
 
-template <typename Object>
-void list<Object>::swap_adjacent(iterator itr)
+template <typename Object> void list<Object>::swap_adjacent(iterator itr)
 {
-	//swap itr and itr+1
+	// swap itr and itr+1
 	Object ele_1 = *itr;
 	itr = erase(itr);
 	Object ele_2 = *itr;
@@ -355,13 +358,22 @@ void list<Object>::swap_adjacent(iterator itr)
 	insert(itr, ele_1);
 }
 
-template <typename Object>
-void list<Object>::swap_adjacent(size_t n)
+template <typename Object> void list<Object>::swap_adjacent(size_t n)
 {
 	auto ptr = begin();
-	for(int i = 0; i < n; i++)
+	for (int i = 0; i < n; i++)
 		++ptr;
 	swap_adjacent(ptr);
 }
 
-} // namespace my_adt
+template <typename Object>
+void list<Object>::splice(iterator position, list& lst)
+{
+	position.current->_prev->_next = lst._head->_next;
+	lst._tail->_prev->_next = position.current;
+	_size += lst._size;
+	lst._head = lst._tail = nullptr;
+	lst._size = 0;
+}
+
+} // namespace my_stl2

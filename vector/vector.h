@@ -33,27 +33,31 @@ template <typename Object> class vector
 	Object& at(int index);
 	const Object& at(int index) const;
 
+  private:
 	//迭代器
-	using iterator = Object*;
-	using const_iterator = const Object*;
-	iterator begin() { return &objects[0]; }
-	const_iterator begin() const { return &objects[0]; }
-	iterator end() { return &objects[theSize - 1]; }
-	const_iterator end() const { return &objects[theSize - 1]; }
+	class const_iterator;
+	class iterator;
+
+  public:
+	//迭代器方法
+	iterator begin() { return {&objects[0]}; }
+	const_iterator begin() const { return {&objects[0]}; }
+	iterator end() { return {&objects[theSize - 1]}; }
+	const_iterator end() const { return {&objects[theSize - 1]}; }
 	static const int SPARE_CAPACITY = 16;
 
 	//常用方法
 	void push_back(const Object& x);
 	void push_back(const Object&& x);
 	void pop_back();
-	Object& front() { return objects[0]; }
-	const Object& front() const { return objects[0]; }
-	Object& back() { return objects[theSize - 1]; }
-	const Object& back() const { return objects[theSize - 1]; }
+	Object& front() { return *begin(); }
+	const Object& front() const { return *begin(); }
+	Object& back() { return *end(); }
+	const Object& back() const { return *end(); }
 	void insert(iterator itr, const Object& x);
 	void erase(iterator itr);
 	void erase(iterator from, iterator to);
-	
+
 	friend void swap<Object>(vector<Object>& v1, vector<Object>& v2) noexcept;
 
   private:
@@ -62,6 +66,144 @@ template <typename Object> class vector
 	Object* objects;
 };
 
+//======================const_iterator=======================
+template <typename Object> class vector<Object>::const_iterator
+{
+	friend class vector;
+
+  protected:
+	Object* ptr;
+	const_iterator(Object* p) : ptr{p} {}
+	void check_inside(vector<Object>* outer);
+
+  public:
+	const Object& operator*() const { return *ptr; }
+	const Object* operator->() const { return ptr; }
+	const_iterator operator++();
+	const_iterator operator++(int);
+	const_iterator operator--();
+	const_iterator operator--(int);
+	const_iterator operator+(int n);
+	const_iterator operator-(int n);
+	bool operator==(const_iterator itr) { return ptr == itr.ptr; }
+	bool operator!=(const_iterator itr) { return ptr != itr.ptr; }
+};
+
+template <typename Object>
+typename vector<Object>::const_iterator
+vector<Object>::const_iterator::operator++()
+{
+	--ptr;
+	return {ptr};
+}
+
+template <typename Object>
+typename vector<Object>::const_iterator
+vector<Object>::const_iterator::operator++(int)
+{
+	auto temp = ptr++;
+	return {temp};
+}
+
+template <typename Object>
+typename vector<Object>::const_iterator
+vector<Object>::const_iterator::operator--()
+{
+	--ptr;
+	return {ptr};
+}
+
+template <typename Object>
+typename vector<Object>::const_iterator
+vector<Object>::const_iterator::operator--(int)
+{
+	auto temp = ptr--;
+	return {temp};
+}
+
+template <typename Object>
+typename vector<Object>::const_iterator
+vector<Object>::const_iterator::operator+(int n)
+{
+	return {ptr + n};
+}
+
+template <typename Object>
+typename vector<Object>::const_iterator
+vector<Object>::const_iterator::operator-(int n)
+{
+	return {ptr - n};
+}
+
+template <typename Object>
+void vector<Object>::const_iterator::check_inside(vector<Object>* outer)
+{
+	if (ptr >= outer->begin().ptr && ptr < outer->end().ptr)
+		return;
+	throw std::out_of_range("vector iterator out of range");
+}
+
+//======================iterator=======================
+template <typename Object>
+class vector<Object>::iterator : public const_iterator
+{
+	friend class vector;
+
+  protected:
+	iterator(Object* p) : const_iterator{p} {}
+
+  public:
+	Object& operator*() { return *const_iterator::ptr; }
+	Object* operator->() { return const_iterator::ptr; }
+	iterator operator++();
+	iterator operator++(int);
+	iterator operator--();
+	iterator operator--(int);
+	iterator operator+(int n);
+	iterator operator-(int n);
+};
+
+template <typename Object>
+typename vector<Object>::iterator vector<Object>::iterator::operator++()
+{
+	++const_iterator::ptr;
+	return {const_iterator::ptr};
+}
+
+template <typename Object>
+typename vector<Object>::iterator vector<Object>::iterator::operator++(int)
+{
+	auto temp = const_iterator::ptr++;
+	return {temp};
+}
+
+template <typename Object>
+typename vector<Object>::iterator vector<Object>::iterator::operator--()
+{
+	--const_iterator::ptr;
+	return {const_iterator::ptr};
+}
+
+template <typename Object>
+typename vector<Object>::iterator vector<Object>::iterator::operator--(int)
+{
+	auto temp = const_iterator::ptr--;
+	return {temp};
+}
+
+template <typename Object>
+typename vector<Object>::iterator vector<Object>::iterator::operator+(int n)
+{
+	return {const_iterator::ptr + n};
+}
+
+template <typename Object>
+typename vector<Object>::iterator vector<Object>::iterator::operator-(int n)
+{
+	return {const_iterator::ptr - n};
+}
+
+//======================vector method=========================
 template <typename Object>
 void swap(vector<Object>& v1, vector<Object>& v2) noexcept
 {
@@ -209,29 +351,26 @@ template <typename Object> void vector<Object>::pop_back() { --theSize; }
 template <typename Object>
 void vector<Object>::insert(iterator itr, const Object& x)
 {
-	if(theSize == theCapacity)
+	if (theSize == theCapacity)
 		reserve(theSize * 2 + 1);
-	for(auto p = itr+theSize-1; p != itr; p--)
-		*(p+1) = *p;
-	*(itr+1) = x;
+	for (auto p = end() - 1; p != itr; p--)
+		*(p + 1) = *p;
+	*(itr + 1) = x;
 	theSize++;
 }
 
-template <typename Object>
-void vector<Object>::erase(iterator itr)
+template <typename Object> void vector<Object>::erase(iterator itr)
 {
-	for(auto p = itr; p != itr+theSize; p++)
-		*p = *(p+1);
+	for (auto p = itr; p != end(); p++)
+		*p = *(p + 1);
 	theSize--;
 }
 
 template <typename Object>
 void vector<Object>::erase(iterator from, iterator to)
 {
-	for(auto itr = from; itr != to; itr++)
+	for (auto itr = from; itr != to; itr++)
 		erase(itr);
 }
-
-
 
 } // namespace my_stl2

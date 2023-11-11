@@ -5,6 +5,31 @@
 
 namespace my_stl2
 {
+//stringent check
+//check empty
+//fornt, back
+//remove their noexcept attribute
+class list_empty: public std::runtime_error
+{
+public:
+	list_empty(const char* msg = "list is empty"):
+	   std::runtime_error(msg){}
+};
+//check iterator invalid
+//iterator operator++--
+class iterator_invalid: public std::runtime_error
+{
+public:
+	//need to specify iterator or reverse_itr
+	iterator_invalid(const char* msg):
+		std::runtime_error(msg){}
+};
+// Cannot precisely check iterator and reverse_iterator respectively.
+// It is related to the virtual function.
+// Invoke this virtual function in the insert and erase methods.
+// Pass the list's 'this' pointer to the iterator's method.
+// To access the list's private items in the iterator,
+// we must declare four friend iterator classes.
 
 // class list have three nested class
 // all nested class's implation below
@@ -13,6 +38,7 @@ namespace my_stl2
 // end() returns _tail
 template <typename Object> class list
 {
+	friend class itr_check_interface;
 	// nested class
   private:
 	struct Node;
@@ -60,10 +86,14 @@ template <typename Object> class list
 	const_reverse_iterator crend() const { return _head; }
 
 	// element access
-	Object& front() { return _head->_element; }
-	const Object& front() const { return _head->_element; }
-	Object& back() { return _tail->_element; }
-	const Object& back() const { return _tail->_element; }
+	Object& front()
+		{ check_noempty(); return _head->_element; }
+	const Object& front() const 
+		{ check_noempty(); return _head->_element; }
+	Object& back() 
+		{ check_noempty(); return _tail->_element; }
+	const Object& back() const 
+		{ check_noempty(); return _tail->_element; }
 
 	// capacity
 	size_t size() const noexcept { return _size; }
@@ -76,22 +106,30 @@ template <typename Object> class list
 		while (!empty())
 			pop_front();
 	}
-	void push_front(const Object& x) { insert(begin(), x); }
-	void push_front(Object&& x) { insert(begin(), std::move(x)); }
-	void push_back(const Object& x) { insert(end(), (x)); }
-	void push_back(Object&& x) { insert(end(), std::move(x)); }
-	void pop_front() noexcept { erase(begin()); }
-	void pop_back() noexcept { erase(back()); }
+	void push_front(const Object& x) 
+		{ insert(begin(), x); }
+	void push_front(Object&& x) 
+		{ insert(begin(), std::move(x)); }
+	void push_back(const Object& x) 
+		{ insert(end(), (x)); }
+	void push_back(Object&& x) 
+		{ insert(end(), std::move(x)); }
+	void pop_front() 
+		{ erase(begin()); }
+	void pop_back() 
+		{ erase(back()); }
 
 	iterator insert(iterator itr, const Object& x);
 	iterator insert(iterator itr, Object&& x);
-	iterator erase(iterator itr) noexcept;
+	iterator erase(iterator itr) ;
 	iterator erase(iterator from, iterator to);
 
 	// for exercises
 	void swap_adjacent(iterator itr);
 	void swap_adjacent(size_t n);
 	void splice(iterator position, list& lst);
+	// for stringent check
+	void check_noempty();
 
 	// data members
   private:
@@ -116,12 +154,13 @@ template <typename Object> struct list<Object>::Node
 		: _element(element), _prev(prev), _next(next){};
 };
 
+
 //===================const_iterator=======================//
-template <typename Object> class list<Object>::const_iterator
+template <typename Object> 
+class list<Object>::const_iterator
 {
 	// outer class can access and modify
 	friend class list<Object>;
-
   public:
 	// iterator info
 	using iterator_category = std::bidirectional_iterator_tag;
@@ -138,12 +177,14 @@ template <typename Object> class list<Object>::const_iterator
 	const_iterator operator++()
 	{
 		current = current->_next;
+		check_noinvalid();
 		return *this;
 	}
 	const_iterator operator++(int);
 	const_iterator operator--()
 	{
 		current = current->_prev;
+		check_noinvalid();
 		return *this;
 	}
 	const_iterator operator--(int);
@@ -161,6 +202,7 @@ template <typename Object> class list<Object>::const_iterator
 	Node* current;
 	// for outer class construct
 	const_iterator(Node* p) : current{p} {}
+	void check_noinvalid() const;
 };
 
 template <typename Object>
@@ -169,6 +211,7 @@ list<Object>::const_iterator::operator++(int)
 {
 	auto temp = current;
 	current = current->_next;
+	check_noinvalid();
 	return temp;
 }
 
@@ -178,7 +221,15 @@ list<Object>::const_iterator::operator--(int)
 {
 	auto temp = current;
 	current = current->_prev;
+	check_noinvalid();
 	return temp;
+}
+
+template <typename Object>
+void list<Object>::const_iterator::check_noinvalid() const
+{
+	if(current == nullptr)
+		throw iterator_invalid("iterator is nullptr");
 }
 
 //=========================iterator==========================//
@@ -198,12 +249,14 @@ class list<Object>::iterator : public const_iterator
 	iterator operator++()
 	{
 		current = current->_next;
+		const_iterator::check_noinvalid();
 		return *this;
 	}
 	iterator operator++(int);
 	iterator operator--()
 	{
 		current = current->_prev;
+		const_iterator::check_noinvalid();
 		return *this;
 	}
 	iterator operator--(int);
@@ -217,6 +270,7 @@ typename list<Object>::iterator list<Object>::iterator::operator++(int)
 {
 	auto temp = current;
 	current = current->_next;
+	const_iterator::check_noinvalid();
 	return temp;
 }
 
@@ -225,6 +279,7 @@ typename list<Object>::iterator list<Object>::iterator::operator--(int)
 {
 	auto temp = current;
 	current = current->_prev;
+	const_iterator::check_noinvalid();
 	return temp;
 }
 
@@ -240,12 +295,14 @@ public:
 	const_reverse_iterator operator++()
 	{
 		current = current->_prev;
+		const_iterator::check_noinvalid();
 		return *this;
 	}
 	const_reverse_iterator operator++(int);
 	const_reverse_iterator operator--()
 	{
 		current = current ->_next;
+		const_iterator::check_noinvalid();
 		return *this;
 	}
 	const_reverse_iterator operator--(int);
@@ -254,20 +311,25 @@ protected:
 };
 
 template <typename Object>
-typename list<Object>::const_reverse_iterator list<Object>::const_reverse_iterator::operator++(int)
+typename list<Object>::const_reverse_iterator 
+	list<Object>::const_reverse_iterator::operator++(int)
 {
 	auto temp = current;
 	current = current->_prev;
+	const_iterator::check_noinvalid();
 	return temp;
 }
 
 template <typename Object>
-typename list<Object>::const_reverse_iterator list<Object>::const_reverse_iterator::operator--(int)
+typename list<Object>::const_reverse_iterator 
+	list<Object>::const_reverse_iterator::operator--(int)
 {
 	auto temp = current;
 	current = current->_next;
+	const_iterator::check_noinvalid();
 	return temp;
 }
+
 //=======================reverse_iterator===========================//
 template <typename Object>
 class list<Object>::reverse_iterator: public iterator
@@ -279,12 +341,14 @@ public:
 	reverse_iterator operator++()
 	{
 		current = current->_prev;
+		const_iterator::check_noinvalid();
 		return *this;
 	}
 	reverse_iterator operator++(int);
 	reverse_iterator operator--()
 	{
 		current = current ->_next;
+		const_iterator::check_noinvalid();
 		return *this;
 	}
 	reverse_iterator operator--(int);
@@ -297,6 +361,7 @@ typename list<Object>::reverse_iterator list<Object>::reverse_iterator::operator
 {
 	auto temp = current;
 	current = current->_prev;
+	const_iterator::check_noinvalid();
 	return temp;
 }
 
@@ -305,9 +370,9 @@ typename list<Object>::reverse_iterator list<Object>::reverse_iterator::operator
 {
 	auto temp = current;
 	current = current->_next;
+	const_iterator::check_noinvalid();
 	return temp;
 }
-
 
 //=========================list method============================//
 template <typename Object> void list<Object>::init()
@@ -427,8 +492,9 @@ typename list<Object>::iterator list<Object>::insert(iterator itr, Object&& x)
 }
 
 template <typename Object>
-typename list<Object>::iterator list<Object>::erase(iterator itr) noexcept
+typename list<Object>::iterator list<Object>::erase(iterator itr) 
 {
+	check_noempty();
 	Node* p = itr.current;
 	iterator result{p->_next};
 	p->_prev->_next = p->_next;
@@ -474,5 +540,13 @@ void list<Object>::splice(iterator position, list& lst)
 	lst._head = lst._tail = nullptr;
 	lst._size = 0;
 }
+
+template <typename Object>
+void list<Object>::check_noempty()
+{
+	if(empty())
+		throw list_empty();
+}
+
 
 } // namespace my_stl2

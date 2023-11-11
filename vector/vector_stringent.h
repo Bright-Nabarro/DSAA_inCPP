@@ -58,8 +58,7 @@ template <typename Object> class vector
 	void erase(iterator itr);
 	void erase(iterator from, iterator to);
 
-	friend void swap<Object>
-		(vector<Object>& v1, vector<Object>& v2) noexcept;
+	friend void swap<Object>(vector<Object>& v1, vector<Object>& v2) noexcept;
 
   private:
 	int theSize;

@@ -1,7 +1,7 @@
 #include "../list/list.h"
 #include "../algorithm/algorithm.h"
 #include <iostream>
-
+#include <string_view>
 int main()
 {
 	using namespace my_stl2;

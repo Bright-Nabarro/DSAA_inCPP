@@ -11,7 +11,8 @@ namespace my_stl2
 // use sentinel _head and _tail,
 // begin() returns _head->next
 // end() returns _tail
-template <typename Object> class list
+template <typename Object> 
+class list
 {
 	// nested class
   private:

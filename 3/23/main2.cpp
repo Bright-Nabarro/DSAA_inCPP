@@ -12,7 +12,7 @@ int main()
 	{
 		for(const auto& x: result)
 		{
-			cout << x.second << " ";
+			cout << x.first << ": "<< x.second << "    ";
 		}
 		cout << endl;
 	}

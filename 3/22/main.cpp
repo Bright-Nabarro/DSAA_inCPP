@@ -1,16 +1,32 @@
-#include "to_post.h"
+#include "caculate.h"
 #include <iostream>
+#include <string>
 
 using namespace std;
+using namespace my_stl2;
+
 int main()
 {
 	string expr;
-	getline(cin, expr);
-	my_stl2::error_code ec = 0;
-	auto result = my_stl2::to_postfix(expr, ec);
-	for(const auto& x: result)
+	cout << "lin17's caculator v0.1\nsupport:\n";
+	for(const auto& x: opPrecedence)
+		cout << "[" << x.first << "] ";
+	cout << "operators" << endl;
+
+	while(getline(cin, expr))
 	{
-		cout << x << " ";
+		if(expr.empty())
+			continue;
+		if(expr == "quit" || expr == "q")
+			break;
+
+		errorCon ec;
+		double result = caculate(expr, ec);
+		if(!ec)
+		{
+			cout << ec.msg << endl;
+			continue;
+		}
+		cout << result << endl;
 	}
-	cout << endl;
 }

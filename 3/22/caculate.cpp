@@ -39,7 +39,7 @@ double caculate(vector<pair<opers_num, math_opers>>& exprs)
 				break;
 			case 2:
 				stkTo2Double(exprStk, x1, x2);
-				exprStk.push(x1/x2);
+				exprStk.push(x2/x1);
 				break;
 			case 3:
 				stkTo2Double(exprStk, x1, x2);
@@ -59,7 +59,7 @@ double caculate(vector<pair<opers_num, math_opers>>& exprs)
 			throw domain_error(buf.str());
 		}
 	}
-	if(exprStk.empty())
+	if(exprStk.size() != 1)
 		throw logic_error("loss number or original expression invalid\
 in to_postfix function");
 	return exprStk.top();

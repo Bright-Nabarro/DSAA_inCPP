@@ -105,7 +105,15 @@ bool pushParenthsis(const string& infix, const int pos, int& opePos, int& digitP
 			results.push_back({opers_num::operator_erp, "("});
 		}
 		else
+		{
+			if(pos < infix.length()-1 && isdigit(infix[pos+1]))
+			{
+				ec.code = 1;
+				ec.msg = "right parenthsis immediately afterwards a oprand";
+				return false;
+			}
 			results.push_back({opers_num::right_parenthsis, ")"});
+		}
 	}
 	else
 	{
@@ -139,8 +147,11 @@ vector<pair<opers_num,math_opers>> split_math_expression
 			if(opePos != -1 && !pushOperator(infix, pos, opePos, results, ec))
 				return{};
 		}
-		else if(infix[pos] == '.' && !checkDecPoint(infix, pos, ec))
+		else if(infix[pos] == '.' )
+		{
+			if(!checkDecPoint(infix, pos, ec))
 				return{};
+		}
 
 		else if((infix[pos] == '(' || infix[pos] == ')'))
 		{
@@ -161,6 +172,12 @@ vector<pair<opers_num,math_opers>> split_math_expression
 	{
 		ec.code = 1;
 		ec.msg = "last operator not digit";
+		return {};
+	}
+	if(infix[infix.length()-1] == '(')
+	{
+		ec.code = 1;
+		ec.msg = "last right parenthsis are not balanced";
 		return {};
 	}
 	assert(digitPos != -1 || infix[infix.length()-1] == ')');

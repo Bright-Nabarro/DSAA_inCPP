@@ -11,4 +11,4 @@ to_post.o: ../23/to_post.cpp ../23/to_post.h
 	g++ -g -c ../23/to_post.cpp
 
 clean: 
-	rm edit main.o caculate.o to_post.o
+	rm e.out main.o caculate.o to_post.o

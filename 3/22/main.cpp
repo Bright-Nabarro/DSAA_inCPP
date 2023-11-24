@@ -8,9 +8,9 @@ using namespace my_stl2;
 int main()
 {
 	string expr;
-	cout << "lin17's caculator v0.1\nsupport:\n";
+	cout << "lin17's caculator\nsupport:\n";
 	for(const auto& x: opPrecedence)
-		cout << "[" << x.first << "] ";
+		cout << "[\" " << x.first << " \"] ";
 	cout << "operators" << endl;
 
 	while(getline(cin, expr))

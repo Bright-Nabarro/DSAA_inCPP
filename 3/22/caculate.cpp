@@ -47,7 +47,7 @@ double caculate(vector<pair<opers_num, math_opers>>& exprs)
 				break;
 			case 4:
 				stkTo2Double(exprStk, x1, x2);
-				exprStk.push(x1-x2);
+				exprStk.push(x2-x1);
 				break;
 			}
 		}

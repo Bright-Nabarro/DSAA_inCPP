@@ -59,7 +59,19 @@ bool checkDecPoint(const string& infix, const int pos, errorCon& ec)
 inline void pushOprand(const string& infix, const int pos,  int& digitPos,
 	   vector<pair<opers_num, math_opers>>& results, errorCon& ec)
 {
-	results.push_back({opers_num::operand, infix.substr(digitPos, pos-digitPos)});
+	auto operand = infix.substr(digitPos, pos-digitPos);
+	if(results.size() < 2 ||
+		(results[results.size()-2].first == opers_num::operator_erp 
+		&& results[results.size()-2].second != "("))
+	{
+		if(results.size() >= 1 && (results[results.size()-1].second == "+" ||
+		   results[results.size()-1].second == "-"))
+		{
+			operand = results[results.size()-1].second + operand;
+			results.pop_back();
+		}
+	}
+	results.push_back({opers_num::operand, operand});
 	digitPos = -1;
 }
 

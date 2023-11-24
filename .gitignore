@@ -2,3 +2,7 @@
 .bin/
 .vscode/
 *.o
+*.obj
+*.exe
+edit
+a

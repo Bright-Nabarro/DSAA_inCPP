@@ -147,7 +147,7 @@ vector<pair<opers_num,math_opers>> split_math_expression
 {
 	infix.erase(remove(infix.begin(), infix.end(), ' '), infix.end());
 	vector<pair<opers_num, math_opers>> results;
-	//pre...pos = -1 when prePos donot recognized
+	// digit/opepos = -1 when it donot recognized
 	int digitPos = -1, opePos = -1, pos;
 	for(pos = 0; pos < infix.length(); pos++)
 	{

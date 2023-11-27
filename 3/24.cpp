@@ -39,26 +39,10 @@ public:
 int main()
 {
 	arrayStack<int, 10> stk;
-	for(int i = 0; i < 11; i++)
-	{
-		if(!stk.pushL(i))
-			cout << "overflow" << endl;
-	}
-	while(!stk.emptyL())
-	{
-		cout << stk.topL() << " ";
-		stk.popL();
-	}
-	cout << endl;
-
-	for(int i = 0; i < 11; i++)
-	{
-		if(!stk.pushR(i))
-			cout << "overflow" << endl;
-	}
-	while(!stk.emptyR())
-	{
-		cout << stk.topR() << " ";
-		stk.popR();
-	}
+	for(int i = 0; i < 5; i++)
+		stk.pushL(i);
+	for(int i = 10; i < 15; i++)
+		stk.pushR(i);
+	cout << stk.sizeL() << " " << stk.topL() << endl;
+	cout << stk.sizeR() << " " << stk.topR() << endl;
 }

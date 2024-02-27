@@ -194,10 +194,10 @@ vector<pair<opers_num,math_opers>> split_math_expression
 	}
 	assert(digitPos != -1 || infix[infix.length()-1] == ')');
 
-	//==================need check=============================//
+	//======================need check=========================//
 	if(digitPos != -1)
 		pushOprand(infix, infix.length(), digitPos, results, ec);
-	//==================need check=============================//
+	//======================need check=========================//
 
 	return results;
 }

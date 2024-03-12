@@ -1,4 +1,7 @@
 InlayHints:
-  Enabled: Yes
+  Enabled: No
   ParameterNames: No
   DeducedTypes: Yes
+  
+CompileFlags:
+  Add: [-std=c++20]

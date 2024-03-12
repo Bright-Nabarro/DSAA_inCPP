@@ -111,7 +111,6 @@ void Deque<T>::resize_alloc()
         newLists[idx] = std::move(*ptr);
     }
 
-
     m_capSize = newCapSize;
     m_lists = std::move(newLists);
     m_front = m_lists.get()+frontBias;

@@ -1,5 +1,5 @@
 CC = g++
-C_FLAGS = -std=c++20 -g -Og -Wall
+C_FLAGS = -std=c++20 -g -Wall
 TARGET = app
 OBJECTS = test.o
 DEPS = $(OBJECTS:.o=.d)

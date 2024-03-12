@@ -1,9 +1,9 @@
 #pragma once
 #include <cstddef>  //for size_t
+#include <cassert>
 #include <iostream>
 #include <memory>
 #include <utility>
-#include <cassert>
 #include <format>
 
 // use < and == compare
@@ -37,8 +37,11 @@ private:
     using uptr = std::unique_ptr<BinaryNode>;
     
 private:
-    T& find(bool isLeft) const;
-    bool contains(const T& x, const uptr& ptr);
+    const uptr& find_min(const uptr& ptr) const;
+    const uptr& find_max(const uptr& ptr) const;
+    uptr& find_min(uptr& ptr);
+    uptr& find_max(uptr& ptr);
+    bool contains(const T& x, const uptr& ptr) const;
     void print_tree(std::ostream& out, const uptr& ptr) const;
     void print_nodes(std::ostream& out, 
                      const uptr& ptr, const uptr& next) const;
@@ -111,13 +114,13 @@ size_t BinarySearchTree<T>::size() const
 template<typename T>
 const T& BinarySearchTree<T>::find_min() const
 {
-    return find(true);
+    return find_min(root)->element;
 }
 
 template<typename T>
 const T& BinarySearchTree<T>::find_max() const
 {
-    return find(false);
+    return find_max(root)->element;
 }
 
 template<typename T>
@@ -166,26 +169,50 @@ bool BinarySearchTree<T>::remove(const T& x)
 }
 
 template<typename T>
-T& BinarySearchTree<T>::find(bool isLeft) const
+auto BinarySearchTree<T>::find_min(const uptr& ptr) const -> const uptr&
 {
-    uptr& ptr {root};
-    while(ptr != nullptr)
-    {
-        if(isLeft)
-            ptr = ptr->left;
-        else
-            ptr = ptr->right;
-    }
-    return ptr->element;
+    if(ptr == nullptr)
+        throw std::runtime_error{"there on elements in search tree"};
+    
+    if(ptr->left == nullptr)
+        return ptr;
+    else
+        return find_min(ptr->left);
 }
 
 template<typename T>
-bool BinarySearchTree<T>::contains(const T& x, const uptr& ptr)
+auto BinarySearchTree<T>::find_max(const uptr& ptr) const -> const uptr&
 {
-    if(ptr->element == x)
+    if(ptr == nullptr)
+        throw std::runtime_error{"there on elements in search tree"};
+
+    if(ptr->right == nullptr)
+        return ptr;
+    else
+        return find_max(ptr->right);
+}
+
+template<typename T>
+auto BinarySearchTree<T>::find_min(uptr& ptr) -> uptr&
+{
+    return const_cast<uptr&>(std::as_const(*this).find_min(ptr));
+}
+
+template<typename T>
+auto BinarySearchTree<T>::find_max(uptr& ptr) -> uptr&
+{
+    return const_cast<uptr&>(std::as_const(*this).find_max(ptr));
+}
+
+template<typename T>
+bool BinarySearchTree<T>::contains(const T& x, const uptr& ptr) const
+{
+    if(ptr == nullptr)
+        return false;
+    else if(ptr->element == x)
         return true;
     else
-        return contains(x, ptr) || contains(x, ptr);
+        return contains(x, ptr->left) || contains(x, ptr->right);
 }
 
 template<typename T>
@@ -205,10 +232,12 @@ template<typename T>
 void BinarySearchTree<T>::print_nodes(std::ostream& out, 
                                       const uptr& ptr, const uptr& next) const
 {
-    if(ptr != nullptr)
+    static size_t counter {0};
+
+    if(next != nullptr)
         out << std::format("{} -> {};\n", ptr->element, next->element);
     else
-        out << std::format("{} -> {};\n", ptr->element, "null");
+        out << std::format("{} -> {}{};\n", ptr->element, "null", counter++);
 }
 
 template<typename T>
@@ -237,13 +266,14 @@ bool BinarySearchTree<T>::insert(const T& x, uptr& ptr)
 {
     if(ptr == nullptr)
     {
-        ptr = make_unique(x, nullptr, nullptr);
+        ptr = std::make_unique<BinaryNode>(x, nullptr, nullptr);
+        ++currentSize;
         return true;
     }
     
-    if(ptr->element < x)
+    if(x < ptr->element)
         return insert(x, ptr->left);
-    else if(x < ptr->element)
+    else if(ptr->element < x)
         return insert(x, ptr->right);
     else
     {
@@ -262,9 +292,9 @@ bool BinarySearchTree<T>::insert(T&& x, uptr& ptr)
         return true;
     }
     
-    if(ptr->element < x)
+    if(x < ptr->element)
         return insert(std::move(x), ptr->left);
-    else if(x < ptr->element)
+    else if(ptr->element < x)
         return insert(std::move(x), ptr->right);
     else
     {
@@ -279,17 +309,27 @@ bool BinarySearchTree<T>::remove(const T& x, uptr& ptr)
     if(ptr == nullptr)
         return false;
 
-    if(x < ptr.element)
+    if(x < ptr->element)
     {
         return remove(x, ptr->left);
     }
-    else if(ptr.element < x)
+    else if(ptr->element < x)
     {
         return remove(x, ptr->right);
     }
+    else if(ptr->left != nullptr && ptr->right != nullptr)
+    {
+        auto& rptr = find_min(ptr->right);
+        ptr->element = rptr->element;
+        //only one calling to remove
+        remove(ptr->element, rptr);
+        --currentSize;
+        return true;
+    }
     else
     {
-        ptr.reset();
+        //smart pointer donot use expilicit release operation
+        ptr = (ptr->left != nullptr) ? std::move(ptr->left) : std::move(ptr->right);
         --currentSize;
         return true;
     }
@@ -298,25 +338,23 @@ bool BinarySearchTree<T>::remove(const T& x, uptr& ptr)
 template<typename T>
 struct BinarySearchTree<T>::BinaryNode
 {
-        T element;
-        uptr left;
-        uptr right;
-        BinaryNode(const T& theElement, uptr theLeft = nullptr,
-                   uptr theRight = nullptr);
-        BinaryNode(T&& theElement, std::unique_ptr<BinaryNode> theLeft = nullptr,
-                   std::unique_ptr<BinaryNode> theRight = nullptr);
+    T element;
+    uptr left;
+    uptr right;
+    BinaryNode(const T& theElement, uptr theLeft = nullptr,
+               uptr theRight = nullptr);
+    BinaryNode(T&& theElement, uptr theLeft = nullptr,
+               uptr theRight = nullptr);
 };
 
 template<typename T>
 BinarySearchTree<T>::BinaryNode::BinaryNode
-(const T& theElement, std::unique_ptr<BinaryNode> theLeft,
-                   std::unique_ptr<BinaryNode> theRight) :
+(const T& theElement, uptr theLeft, uptr theRight) :
     element{theElement}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}
 
 template<typename T>
 BinarySearchTree<T>::BinaryNode::BinaryNode
-(T&& theElement, std::unique_ptr<BinaryNode> theLeft,
-                   std::unique_ptr<BinaryNode> theRight) :
+(T&& theElement, uptr theLeft, uptr theRight) :
     element{std::move(theElement)}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}

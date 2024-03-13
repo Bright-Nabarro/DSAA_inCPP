@@ -28,7 +28,7 @@ public:
     void print_tree(std::ostream& out) const;
 
     void make_empty();
-    //need add requires
+    //should add requires T == RT& || t == RT&&
     template<typename RT>
     bool insert(RT&& x);
     bool remove(const T& x);
@@ -40,7 +40,7 @@ private:
 private:
     const uptr& find_min(const uptr& ptr) const;
     const uptr& find_max(const uptr& ptr) const;
-    const uptr& find(const uptr& ptr, bool isLeft) const;
+    const uptr& find_minmax(const uptr& ptr, bool isLeft) const;
     uptr& find_min(uptr& ptr);
     uptr& find_max(uptr& ptr);
     bool contains(const T& x, const uptr& ptr) const;
@@ -48,7 +48,7 @@ private:
     void print_nodes(std::ostream& out, 
                      const uptr& ptr, const uptr& next) const;
 
-    uptr& clone(const uptr& rhsp);
+    uptr clone(const uptr& rhsp);
     void make_empty(uptr& ptr);
     template<typename RT>
     bool insert(RT&& x, uptr& ptr);
@@ -60,6 +60,20 @@ private:
 };
 
 template<typename T>
+struct BinarySearchTree<T>::BinaryNode
+{
+    T element;
+    uptr left;
+    uptr right;
+    BinaryNode(const T& theElement, uptr&& theLeft = nullptr,
+               uptr&& theRight = nullptr);
+    BinaryNode(T&& theElement, uptr&& theLeft = nullptr,
+               uptr&& theRight = nullptr);
+};
+
+
+//===============================interface implement====================================//
+template<typename T>
 void swap(BinarySearchTree<T>& lhs, BinarySearchTree<T>& rhs) noexcept
 {
     lhs.swap(rhs);
@@ -70,6 +84,7 @@ BinarySearchTree<T>::BinarySearchTree() :
     root {nullptr}, currentSize{0}
 {}
 
+//currentSize assignment need optimize
 template<typename T>
 BinarySearchTree<T>::BinarySearchTree(const BinarySearchTree& rhs) :
     root {nullptr}, currentSize{rhs.currentSize}
@@ -165,20 +180,22 @@ bool BinarySearchTree<T>::remove(const T& x)
     return remove(x, root);
 }
 
+
+//================================privative method=====================================//
 template<typename T>
 auto BinarySearchTree<T>::find_min(const uptr& ptr) const -> const uptr&
 {
-    return find(ptr, true);
+    return find_minmax(ptr, true);
 }
 
 template<typename T>
 auto BinarySearchTree<T>::find_max(const uptr& ptr) const -> const uptr&
 {
-    return find(ptr, false);
+    return find_minmax(ptr, false);
 }
 
 template<typename T>
-auto BinarySearchTree<T>::find(const uptr& ptr, bool isLeft) const 
+auto BinarySearchTree<T>::find_minmax(const uptr& ptr, bool isLeft) const 
 -> const uptr&
 {
     if(ptr == nullptr)
@@ -188,7 +205,7 @@ auto BinarySearchTree<T>::find(const uptr& ptr, bool isLeft) const
     if(nextPtr == nullptr)
         return ptr;
     else
-        return find(nextPtr, isLeft);
+        return find_minmax(nextPtr, isLeft);
 }
 
 template<typename T>
@@ -240,13 +257,13 @@ void BinarySearchTree<T>::print_nodes(std::ostream& out,
 }
 
 template<typename T>
-auto BinarySearchTree<T>::clone(const uptr& rhsp) -> uptr&
+auto BinarySearchTree<T>::clone(const uptr& rhsp) -> uptr
 {
     if(rhsp == nullptr)
         return nullptr;
     else
         return std::make_unique<BinaryNode>
-                    (rhsp->element, clone(rhsp->left), clone(rhsp->right));
+            (rhsp->element, clone(rhsp->left), clone(rhsp->right));
 }
 
 template<typename T>
@@ -315,25 +332,13 @@ bool BinarySearchTree<T>::remove(const T& x, uptr& ptr)
 }
 
 template<typename T>
-struct BinarySearchTree<T>::BinaryNode
-{
-    T element;
-    uptr left;
-    uptr right;
-    BinaryNode(const T& theElement, uptr theLeft = nullptr,
-               uptr theRight = nullptr);
-    BinaryNode(T&& theElement, uptr theLeft = nullptr,
-               uptr theRight = nullptr);
-};
-
-template<typename T>
 BinarySearchTree<T>::BinaryNode::BinaryNode
-(const T& theElement, uptr theLeft, uptr theRight) :
+(const T& theElement, uptr&& theLeft, uptr&& theRight) :
     element{theElement}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}
 
 template<typename T>
 BinarySearchTree<T>::BinaryNode::BinaryNode
-(T&& theElement, uptr theLeft, uptr theRight) :
+(T&& theElement, uptr&& theLeft, uptr&& theRight) :
     element{std::move(theElement)}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}

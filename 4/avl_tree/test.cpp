@@ -5,22 +5,22 @@
 #include <vector>
 #include <set>
 #include <limits>
-#include "binary_search_tree.h"
+#include "avl_tree.h"
 using namespace std;
 
 void test_ini()
 {
-    BinarySearchTree<int> b;
+    AvlTree<int> b;
 }
 
 void test_insert()
 {
-    BinarySearchTree<int> t;
+    AvlTree<int> t;
     assert(t.insert(1));
     assert(!t.insert(1));
     assert(t.insert(2));
 
-    BinarySearchTree<int> t2;
+    AvlTree<int> t2;
     for(int i = 0; i < 500; ++i)
     {
         assert(t2.insert(i));
@@ -33,12 +33,12 @@ void test_insert()
 
 void test_remove()
 {
-    BinarySearchTree<int> t1;
+    AvlTree<int> t1;
     assert(t1.insert(1));
     assert(t1.remove(1));
     assert(!t1.remove(1));
 
-    BinarySearchTree<int> t2;
+    AvlTree<int> t2;
     for(int i {0}; i < 500; ++i)
     {
         assert(t2.insert(i));
@@ -57,7 +57,7 @@ void test_remove()
 
 void test_contains()
 {
-    BinarySearchTree<int> t1;
+    AvlTree<int> t1;
     t1.insert(1);
     assert(t1.contains(1));
 
@@ -67,7 +67,7 @@ void test_contains()
         assert(t1.contains(i));
     }
 
-    BinarySearchTree<int> t3;
+    AvlTree<int> t3;
     static random_device rd;
     static mt19937 gen;
     gen.seed(rd());
@@ -94,7 +94,7 @@ void test_contains()
 
 void test_print()
 {
-    BinarySearchTree<int> t1;
+    AvlTree<int> t1;
     static random_device rd;
     static mt19937 gen;
     gen.seed(rd());
@@ -108,7 +108,7 @@ void test_print()
 
 void test_other()
 {
-    BinarySearchTree<int> t3;
+    AvlTree<int> t3;
     static random_device rd;
     static mt19937 gen;
     gen.seed(rd());
@@ -147,7 +147,7 @@ void test_other()
 
 void test_copy()
 {
-    BinarySearchTree<int> t1;
+    AvlTree<int> t1;
     static random_device rd;
     static mt19937 gen;
     gen.seed(rd());
@@ -173,7 +173,7 @@ void test_copy()
 
 void test_move()
 {
-    BinarySearchTree<int> t1;
+    AvlTree<int> t1;
     static random_device rd;
     static mt19937 gen;
     gen.seed(rd());
@@ -200,7 +200,7 @@ void test_move()
 
 void test_empty()
 {
-    BinarySearchTree<int> t1;
+    AvlTree<int> t1;
     static random_device rd;
     static mt19937 gen;
     gen.seed(rd());
@@ -215,7 +215,7 @@ void test_empty()
     t1.make_empty();
     assert(t1.is_empty());
 
-    BinarySearchTree<int> t2;
+    AvlTree<int> t2;
     for(auto x: v)
     {
         t2.insert(x);
@@ -226,6 +226,22 @@ void test_empty()
         t2.remove(x);
     }
     assert(t2.is_empty());
+}
+
+void avl_basic_test()
+{
+    AvlTree<int> t1;
+    for(int i = 0; i < 10; ++i)
+        t1.insert(i);
+    //t1.print_tree(cout);
+}
+
+void avl_print_test()
+{
+    AvlTree<int> t1;
+    for(int i = 0; i < 500; ++i)
+        t1.insert(i);
+    t1.print_tree(cout);
 }
 
 int main()
@@ -239,5 +255,7 @@ int main()
     test_copy();
     test_move();
     test_empty();
+    avl_basic_test();
+    avl_print_test();
     cout << "o((>ω< ))o" << endl;
 }

@@ -95,22 +95,15 @@ void test_contains()
 void test_print()
 {
     BinarySearchTree<int> t1;
-    t1.insert(3);
-    t1.insert(5);
-    t1.insert(13);
-    t1.insert(1);
-    t1.insert(8);
-    t1.insert(12);
-    t1.insert(7);
-    t1.insert(11);
-    t1.insert(2);
-    t1.insert(9);
-    t1.insert(10);
-    t1.insert(4);
-    t1.insert(6);
-    t1.remove(8);
-    ostringstream ossm;
-    t1.print_tree(ossm);
+    static random_device rd;
+    static mt19937 gen;
+    gen.seed(rd());
+    static uniform_int_distribution dist{0, 100};
+    for(int i{0}; i < 40; ++i)
+    {
+        t1.insert(dist(gen));
+    }
+    t1.print_tree(cout);
 }
 
 void test_other()
@@ -140,7 +133,7 @@ void test_other()
     {
         assert(t3.contains(x));
     }
-    t3.print_tree(cout);
+    //t3.print_tree(cout);
     for(auto x: v)
     {
         t3.remove(x);
@@ -160,4 +153,5 @@ int main()
     test_contains();
     test_print();
     test_other();
+    cout << "o((>ω< ))o" << endl;
 }

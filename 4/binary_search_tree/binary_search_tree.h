@@ -19,7 +19,7 @@ public:
     virtual ~BinarySearchTree() = default;
     void swap(BinarySearchTree& rhs) noexcept;
 
-    size_t size() const;
+    size_t size() const noexcept;
     const T& find_min() const;
     const T& find_max() const;
     bool contains (const T& x) const;
@@ -28,8 +28,9 @@ public:
     void print_tree(std::ostream& out) const;
 
     void make_empty();
-    bool insert(const T& x);
-    bool insert(T&& x);
+    //need add requires
+    template<typename RT>
+    bool insert(RT&& x);
     bool remove(const T& x);
 
 private:
@@ -39,6 +40,7 @@ private:
 private:
     const uptr& find_min(const uptr& ptr) const;
     const uptr& find_max(const uptr& ptr) const;
+    const uptr& find(const uptr& ptr, bool isLeft) const;
     uptr& find_min(uptr& ptr);
     uptr& find_max(uptr& ptr);
     bool contains(const T& x, const uptr& ptr) const;
@@ -48,8 +50,8 @@ private:
 
     uptr& clone(const uptr& rhsp);
     void make_empty(uptr& ptr);
-    bool insert(const T& x, uptr& ptr);
-    bool insert(T&& x, uptr& ptr);
+    template<typename RT>
+    bool insert(RT&& x, uptr& ptr);
     bool remove(const T& x, uptr& ptr);
     
 private:
@@ -106,7 +108,7 @@ void BinarySearchTree<T>::swap(BinarySearchTree& rhs) noexcept
 }
 
 template<typename T>
-size_t BinarySearchTree<T>::size() const
+size_t BinarySearchTree<T>::size() const noexcept
 {
     return currentSize;
 }
@@ -151,15 +153,10 @@ void BinarySearchTree<T>::make_empty()
 }
 
 template<typename T>
-bool BinarySearchTree<T>::insert(const T& x)
+template<typename RT>
+bool BinarySearchTree<T>::insert(RT&& x)
 {
-    return insert(x, root);
-}
-
-template<typename T>
-bool BinarySearchTree<T>::insert(T&& x)
-{
-    return insert(std::move(x), root);
+    return insert(std::forward<RT>(x), root);
 }
 
 template<typename T>
@@ -171,25 +168,27 @@ bool BinarySearchTree<T>::remove(const T& x)
 template<typename T>
 auto BinarySearchTree<T>::find_min(const uptr& ptr) const -> const uptr&
 {
-    if(ptr == nullptr)
-        throw std::runtime_error{"there on elements in search tree"};
-    
-    if(ptr->left == nullptr)
-        return ptr;
-    else
-        return find_min(ptr->left);
+    return find(ptr, true);
 }
 
 template<typename T>
 auto BinarySearchTree<T>::find_max(const uptr& ptr) const -> const uptr&
 {
+    return find(ptr, false);
+}
+
+template<typename T>
+auto BinarySearchTree<T>::find(const uptr& ptr, bool isLeft) const 
+-> const uptr&
+{
     if(ptr == nullptr)
         throw std::runtime_error{"there on elements in search tree"};
 
-    if(ptr->right == nullptr)
+    uptr& nextPtr = isLeft ? ptr->left : ptr->right;
+    if(nextPtr == nullptr)
         return ptr;
     else
-        return find_max(ptr->right);
+        return find(nextPtr, isLeft);
 }
 
 template<typename T>
@@ -262,40 +261,20 @@ void BinarySearchTree<T>::make_empty(uptr& ptr)
 }
 
 template<typename T>
-bool BinarySearchTree<T>::insert(const T& x, uptr& ptr)
+template<typename RT>
+bool BinarySearchTree<T>::insert(RT&& x, uptr& ptr)
 {
     if(ptr == nullptr)
     {
-        ptr = std::make_unique<BinaryNode>(x, nullptr, nullptr);
+        ptr = std::make_unique<BinaryNode>(std::forward<RT>(x), nullptr, nullptr);
         ++currentSize;
         return true;
     }
     
     if(x < ptr->element)
-        return insert(x, ptr->left);
+        return insert(std::forward<RT>(x), ptr->left);
     else if(ptr->element < x)
-        return insert(x, ptr->right);
-    else
-    {
-        assert(x == ptr->element);
-        return false;
-    }
-}
-
-template<typename T>
-bool BinarySearchTree<T>::insert(T&& x, uptr& ptr)
-{
-    if(ptr == nullptr)
-    {
-        ptr = std::make_unique<BinaryNode>(std::move(x), nullptr, nullptr);
-        ++currentSize;
-        return true;
-    }
-    
-    if(x < ptr->element)
-        return insert(std::move(x), ptr->left);
-    else if(ptr->element < x)
-        return insert(std::move(x), ptr->right);
+        return insert(std::forward<RT>(x), ptr->right);
     else
     {
         assert(x == ptr->element);

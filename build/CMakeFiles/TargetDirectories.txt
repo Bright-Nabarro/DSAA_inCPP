@@ -1,2 +1,0 @@
-/mnt/d/cpptest/f3/DSAA/build/CMakeFiles/edit_cache.dir
-/mnt/d/cpptest/f3/DSAA/build/CMakeFiles/rebuild_cache.dir

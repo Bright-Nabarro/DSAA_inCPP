@@ -52,7 +52,7 @@ private:
     void make_empty(uptr& ptr);
     template<typename RT>
     bool insert(RT&& x, uptr& ptr);
-    bool remove(const T& x, uptr& ptr);
+    bool remove(const T& x, uptr& ptr, bool needUpdateSize = true);
     
 private:
     uptr root;
@@ -300,33 +300,35 @@ bool BinarySearchTree<T>::insert(RT&& x, uptr& ptr)
 }
 
 template<typename T>
-bool BinarySearchTree<T>::remove(const T& x, uptr& ptr)
+bool BinarySearchTree<T>::remove(const T& x, uptr& ptr, bool needUpdateSize)
 {
     if(ptr == nullptr)
         return false;
 
     if(x < ptr->element)
     {
-        return remove(x, ptr->left);
+        return remove(x, ptr->left, needUpdateSize);
     }
     else if(ptr->element < x)
     {
-        return remove(x, ptr->right);
+        return remove(x, ptr->right, needUpdateSize);
     }
     else if(ptr->left != nullptr && ptr->right != nullptr)
     {
         auto& rptr = find_min(ptr->right);
         ptr->element = rptr->element;
         //only one calling to remove
-        remove(ptr->element, rptr);
-        --currentSize;
+        remove(ptr->element, rptr, false);
+        if(needUpdateSize)
+            --currentSize;
         return true;
     }
     else
     {
         //smart pointer donot use expilicit release operation
         ptr = (ptr->left != nullptr) ? std::move(ptr->left) : std::move(ptr->right);
-        --currentSize;
+        if(needUpdateSize)
+            --currentSize;
         return true;
     }
 }

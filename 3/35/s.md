@@ -1,0 +1,1 @@
+b because in a single cycle list, tail->next = header, so we can implement a queue with signle cycle list and perform push_back, pop_front at const time

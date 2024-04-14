@@ -1,0 +1,1 @@
+Maintain a size data in each node, perfrom index travelse.

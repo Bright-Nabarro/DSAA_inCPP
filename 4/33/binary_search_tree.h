@@ -57,6 +57,11 @@ private:
 private:
 	uptr root;
 	size_t currentSize;
+
+public:
+	void remove_all_leaves();
+private:
+	void remove_all_leaves(uptr& ptr);
 };
 
 template<typename T>
@@ -344,3 +349,25 @@ BinarySearchTree<T>::BinaryNode::BinaryNode
 (T&& theElement, uptr&& theLeft, uptr&& theRight) :
 	element{std::move(theElement)}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}
+
+template<typename T>
+void BinarySearchTree<T>::remove_all_leaves()
+{
+	remove_all_leaves(root);
+}
+
+
+template<typename T>
+void BinarySearchTree<T>::remove_all_leaves(uptr& ptr)
+{
+	if(ptr == nullptr)
+		return;
+	if(ptr->left == nullptr && ptr->right == nullptr)
+	{
+		ptr.reset();
+		currentSize--;
+		return;
+	}
+	remove_all_leaves(ptr->left);
+	remove_all_leaves(ptr->right);
+}

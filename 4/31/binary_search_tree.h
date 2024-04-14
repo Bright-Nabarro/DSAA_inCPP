@@ -33,7 +33,7 @@ public:
 	bool insert(RT&& x);
 	bool remove(const T& x);
 
-private:
+public:
 	struct BinaryNode;
 	using uptr = std::unique_ptr<BinaryNode>;
 	
@@ -44,9 +44,9 @@ private:
 	uptr& find_min(uptr& ptr);
 	uptr& find_max(uptr& ptr);
 	bool contains(const T& x, const uptr& ptr) const;
-	void print_tree(std::ostream& out, const uptr& ptr) const;
-	void print_nodes(std::ostream& out, 
-					 const uptr& ptr, const uptr& next) const;
+	void print_tree(std::ostream& out, const uptr& ptr, size_t& counter) const;
+	void print_nodes(std::ostream& out, const uptr& ptr,
+					 const uptr& next, size_t& counter) const;
 
 	uptr clone(const uptr& rhsp);
 	void make_empty(uptr& ptr);
@@ -57,6 +57,14 @@ private:
 private:
 	uptr root;
 	size_t currentSize;
+	template<typename U>
+	friend size_t number_of_nodes(BinarySearchTree<U>::uptr& ptr);
+	template<typename U>
+	friend size_t number_of_leaves(BinarySearchTree<U>::uptr& ptr);
+	template<typename U>
+	friend size_t number_of_full_nodes(BinarySearchTree<U>::uptr& ptr);
+public:
+	uptr& get_root() { return root; };
 };
 
 template<typename T>
@@ -155,8 +163,13 @@ bool BinarySearchTree<T>::is_empty() const
 template<typename T>
 void BinarySearchTree<T>::print_tree(std::ostream& out) const
 {
+	size_t counter {0};
 	out << "digraph G {\n";
-	print_tree(out, root);
+	print_tree(out, root, counter);
+	for(size_t i{0}; i < counter; i++)
+	{
+		out << std::format("null{}[label=\"\"]\n", i);
+	}
 	out << "}\n";
 }
 
@@ -232,24 +245,22 @@ bool BinarySearchTree<T>::contains(const T& x, const uptr& ptr) const
 }
 
 template<typename T>
-void BinarySearchTree<T>::print_tree(std::ostream& out, const uptr& ptr) const
+void BinarySearchTree<T>::print_tree(std::ostream& out, const uptr& ptr, size_t& counter) const
 {
 	if(ptr == nullptr)
 		return;
-	print_nodes(out, ptr, ptr->left);
-	print_nodes(out, ptr, ptr->right);
+	print_nodes(out, ptr, ptr->left, counter);
+	print_nodes(out, ptr, ptr->right, counter);
 	
 	//recursive
-	print_tree(out, ptr->left);
-	print_tree(out, ptr->right);
+	print_tree(out, ptr->left, counter);
+	print_tree(out, ptr->right, counter);
 }
 
 template<typename T>
-void BinarySearchTree<T>::print_nodes(std::ostream& out, 
-									  const uptr& ptr, const uptr& next) const
+void BinarySearchTree<T>::print_nodes(std::ostream& out, const uptr& ptr,
+									  const uptr& next, size_t& counter) const
 {
-	static size_t counter {0};
-
 	if(next != nullptr)
 		out << std::format("{} -> {};\n", ptr->element, next->element);
 	else
@@ -344,3 +355,33 @@ BinarySearchTree<T>::BinaryNode::BinaryNode
 (T&& theElement, uptr&& theLeft, uptr&& theRight) :
 	element{std::move(theElement)}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}
+
+template<typename U>
+size_t number_of_nodes(typename BinarySearchTree<U>::uptr& ptr)		//O(N)
+{
+	if(ptr == nullptr)
+		return 0;
+
+	return number_of_nodes<U>(ptr->left) + number_of_nodes<U>(ptr->right) + 1;
+}
+
+template<typename U>
+size_t number_of_leaves(typename BinarySearchTree<U>::uptr& ptr)	//O(N)
+{
+	if(ptr == nullptr)
+		return 0;
+	if(ptr->left == nullptr && ptr->right == nullptr)
+	{
+		return 1;
+	}
+	return number_of_leaves<U>(ptr->left) + number_of_leaves<U>(ptr->right);
+}
+
+template<typename U>
+size_t number_of_full_nodes(typename BinarySearchTree<U>::uptr& ptr)	//O(N)
+{
+	if(ptr == nullptr)
+		return 0;
+	return number_of_full_nodes<U>(ptr->left) + number_of_full_nodes<U>(ptr->right) + 
+		   ((ptr->left != nullptr && ptr->right != nullptr) ? 1 : 0);
+}

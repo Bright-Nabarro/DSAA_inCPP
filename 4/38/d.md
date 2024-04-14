@@ -1,0 +1,1 @@
+Due to the index traversal, the x-coordinate of any node in the left subtree of X must be smaller than that of X itself, and the x-coordinate of the right subtree must be larger than X's x-coordinate. Therefore, regardless of the y-values, the lines will not cross.

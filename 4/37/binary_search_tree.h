@@ -32,6 +32,7 @@ public:
 	template<typename RT>
 	bool insert(RT&& x);
 	bool remove(const T& x);
+	void print_range(const T& lower, const T& upper, std::ostream& os);
 
 private:
 	struct BinaryNode;
@@ -53,6 +54,7 @@ private:
 	template<typename RT>
 	bool insert(RT&& x, uptr& ptr);
 	bool remove(const T& x, uptr& ptr, bool needUpdateSize = true);
+	void print_range(uptr& node, const T& lower, const T& upper, std::ostream& os);
 	
 private:
 	uptr root;
@@ -344,3 +346,22 @@ BinarySearchTree<T>::BinaryNode::BinaryNode
 (T&& theElement, uptr&& theLeft, uptr&& theRight) :
 	element{std::move(theElement)}, left{std::move(theLeft)}, right{std::move(theRight)}
 {}
+
+template<typename T>
+void BinarySearchTree<T>::print_range(const T& lower, const T& upper, std::ostream& os)
+{
+	print_range(root, lower, upper, os);
+}
+
+template<typename T>
+void BinarySearchTree<T>::print_range(uptr& node, const T& lower, const T& upper, std::ostream& os)
+{
+	if(node == nullptr)
+		return;
+	if (lower < node->element)
+		print_range(node->left, lower, upper, os);
+	if (lower <= node->element && node->element <= upper)
+		os << node->element << ' ';
+	if (node->element < upper)
+		print_range(node->right, lower, upper, os);
+}

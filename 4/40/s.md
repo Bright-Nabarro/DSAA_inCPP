@@ -1,0 +1,1 @@
+Has already implement in avl_tree/binary_tree print_tree(ostream&)

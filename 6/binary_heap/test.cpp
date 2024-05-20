@@ -1,138 +1,177 @@
-#include <cassert>
 #include <iostream>
+#include <cassert>
+#include <random>
+#include <limits>
+#include <queue>
 #include <numeric>
+#include <vector>
+#include <ranges>
 #include "binary_heap.hpp"
+
 using namespace std;
 
-//#define PRINT_NODE
+template<typename Ty>
+class Bh : public binary_heap<Ty, std::less<Ty> >
+{
+public:
+	using binary_heap<Ty, std::less<Ty>>::binary_heap;
+	[[nodiscard]] constexpr
+	const Ty& min()  const noexcept
+	{ return binary_heap<Ty,  std::less<Ty>>::priority(); }
+};
 
 void test_ini()
 {
-	BinaryHeap<int> bh1;
-#ifdef PRINT_NODE
-	bh1.print_heap(cout);
-#endif
-
-	vector<int> vi {1, 2, 3, 4, 6, 5};
-	BinaryHeap<int> bh2{vi};
-
-#ifdef PRINT_NODE
-	bh2.print_heap(cout);
-#endif
-}
-
-void test_empty()
-{
-	BinaryHeap<int> bh1;
-	assert(bh1.is_empty());
-	vector<int> vi2 {3};
-	BinaryHeap<int> bh2 {vi2};
-	assert(!bh2.is_empty());
-	BinaryHeap<int> bh3;
-	bh3.insert(1);
-	assert(!bh3.is_empty());
-	BinaryHeap<int> bh4;
-	for(int i = 100; i > 0; i--)
-	{
-		bh4.insert(i);
-	}
-	assert(!bh4.is_empty());
+	Bh<int> b;
 }
 
 void test_insert()
 {
-	BinaryHeap<int> bh1;
-	bh1.insert(1);
-	BinaryHeap<int> bh2;
-	for(int i = 20; i > 0; i--)
+	Bh<int> b1;
+	assert(b1.empty());
+	for (int i = 1; i <= 50; i++)
 	{
-		bh2.insert(i);
+		assert(b1.size() == i-1);
+		b1.insert(i);
+		assert(b1.size() == i);
+		assert(b1.min() == 1);
 	}
-#ifdef PRINT_NODE
-	bh2.print_heap(cout);
-#endif
-}
+	
+	assert(b1.min() == 1);
 
-void test_min()
-{
-	BinaryHeap<int> bh1;
-	try
+	Bh<int> b2;
+	for (int i = 50; i > 0; i--)
 	{
-		[[maybe_unused]] auto trash = bh1.min();
-		assert(true);
-	} catch(out_of_range& e) {
-		//yes;
-	} catch(...) {
-		assert(true);
+		b2.insert(i);
+		assert(b2.size() == 51-i);
+		assert(b2.min() == i);
 	}
 
-	BinaryHeap<int> bh2;
-	bh2.insert(0);
-	assert(bh2.min() == 0);
-	for(int i = 1; i < 100; i++)
-	{
-		bh2.insert(i);
-		assert(bh2.min() == 0);
-	}
+	assert(b2.min() == 1);
 
-	BinaryHeap<int> bh3;
-	for(int i = 100; i > 0; i--)
+	int min3 = numeric_limits<int>::max();
+	Bh<int> b3;
+	static random_device rd;
+	static mt19937 gen;
+	gen.seed(rd());
+	static uniform_int_distribution<int> dist{1, 1000};
+	for(int i = 0; i < 500; i++)
 	{
-		bh3.insert(i);
-		assert(bh3.min() == i);
+		int value = dist(gen);
+		if (value < min3)
+			min3 = value;
+		b3.insert(value);
 	}
+	assert(b3.min() == min3);
+	assert(b3.size() == 500);
 }
 
 void test_remove()
 {
-	BinaryHeap<int> bh1;
-	try {
-		bh1.delete_min();
-		assert(true);
-	} catch(underflow_error& e) {
-		// success
-	} catch(...) {
-		assert(true);
+	Bh<int> b1;
+	for(int i = 0; i < 50; i++)
+	{
+		b1.insert(i);
 	}
 
-	vector<int> vi2 {1, 2, 3, 4, 5, 6};
-	BinaryHeap<int> bh2{vi2};
-	bh2.delete_min();
-	assert(bh2.min() == 2);
-	bh2.delete_min();
-	assert(bh2.min() == 3);
-	bh2.delete_min();
-	assert(bh2.min() == 4);
-	bh2.delete_min();
-	assert(bh2.min() == 5);
-	bh2.delete_min();
-	assert(bh2.min() == 6);
-
-	vector<int> vi3(100);
-	iota(vi3.begin(), vi3.end(), 1);
-	BinaryHeap<int> bh3{vi3};
-	for(int i = 0; i < 100; i++)
+	for(int i = 0; i < 50; i++)
 	{
-		assert(bh3.min() == i+1);
-		bh3.delete_min();
+		assert(b1.min() == i);
+		b1.delete_priority();
+		assert(b1.size() == 49-i);
+	}
+	
+	Bh<int> b2;
+	priority_queue<int, vector<int>, greater<int>> q2;
+	static random_device rd;
+	static mt19937 gen;
+	gen.seed(rd());
+	static uniform_int_distribution<int> dist1{1, 100};
+
+	for(int i = 0; i < 1000; i++)
+	{
+		int value {dist1(gen)};
+		q2.push(value);
+		b2.insert(value);
+	}
+	for(int i = 0; i < 1000; i++)
+	{
+		//assert(b2.min() == q2.top());
+		b2.delete_priority();
+		q2.pop();
+		assert(b2.size() == 999-i);
+	}
+
+	Bh<int> b3;
+	priority_queue<int, vector<int>, greater<int>> q3;
+	static uniform_int_distribution<int> dist2{1, 10'000'000};
+	for(int i = 0; i < 1'000; i++)
+	{
+		int value {dist2(gen)};
+		q3.push(value);
+		b3.insert(value);
+	}
+	
+	for(int i = 0; i < 1'000; i++)
+	{	
+		assert(b3.min() == q3.top());
+		b3.delete_priority();
+		q3.pop();
+		assert(b3.size() == 999-i);
 	}
 }
 
-void test_print()
+void test_build()
 {
-	BinaryHeap<int> bh1;
-	for(int i = 0; i < 300; i++)
-		bh1.insert(i);
-	bh1.print_heap(cout);
+	Bh<int> b1 {{8}};
+	assert(b1.min() == 8);
+	Bh<int> b2 {{2,1}};
+	assert(b2.min() == 1);
+	
+	vector<int> vec3(100);
+	iota(vec3.rbegin(), vec3.rend(), 1);
+	Bh<int> b3 {vec3};
+	assert(b3.min() == 1);
+
+	static random_device rd;
+	static mt19937 gen;
+	gen.seed(rd());
+	static uniform_int_distribution<int> dist1{1, 10000};
+	vector<int> vec4(1000);
+	auto random_view = views::iota(0, static_cast<int>(vec4.size()))
+					 | views::transform([&](int) { return dist1(gen); });
+	ranges::copy(random_view, vec4.begin());
+	Bh<int> b4{vec4};
+	assert(b4.min() == ranges::min(vec4));
+}
+
+void test_all()
+{
+	static random_device rd;
+	static mt19937 gen;
+	gen.seed(rd());
+	static uniform_int_distribution<int> dist1{1, 10000};
+	priority_queue<int, vector<int>, greater<int>> q;
+	Bh<int> b;
+	auto random_view = views::iota(0, 1000)
+					 | views::transform([&](int) { return dist1(gen); });
+	ranges::for_each(random_view, [&](int n){ q.push(n); b.insert(n); });
+	auto ass = [&](int) {
+		assert(q.top() == b.min());
+		q.pop();
+		b.delete_priority();
+	};
+	ranges::for_each(views::iota(0, 1000), ass);
 }
 
 int main()
 {
 	test_ini();
-	test_empty();
 	test_insert();
-	test_min();
 	test_remove();
-	test_print();
-	cout << "o((>ω< ))o" << endl;
+	test_build();
+	test_all();
+
+	cout << "o((>ω< ))o\n";
 }
+

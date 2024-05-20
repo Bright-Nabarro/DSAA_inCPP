@@ -1,0 +1,1 @@
+../word_generator/words_alpha_370104L.txt

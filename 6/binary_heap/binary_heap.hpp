@@ -1,166 +1,173 @@
 #pragma once
-#include <cstddef>		//for size_t
 #include <vector>
+#include <type_traits>
 #include <utility>
-#include <stdexcept>
-#include <iostream>
+#include <ostream>
+#include <format>
 #include <algorithm>
 
-template<typename Ty, typename Compare = std::less<Ty>>
-class BinaryHeap
+#define DEBUG
+
+template<typename C, typename Ty>
+concept Comparator = requires(C cpr, Ty a, Ty b)
 {
-public:
-	explicit BinaryHeap(size_t capacity = 100);
-	explicit BinaryHeap(const std::vector<Ty> items);
-	
-	bool is_empty() const noexcept;
-	template<typename Ty_ref>
-	void insert(Ty_ref&& value);
-	void delete_min();
-	const Ty& min() const;
-
-	void print_heap(std::ostream& os) const;		//for debug
-	size_t size() const noexcept;
-
-private:
-	void build_heap();
-	template<typename Ty_ref>
-	void percolate_up(size_t hole, Ty_ref&& x);
-	void percolate_down(size_t hole);
-
-	void print_node(std::ostream& os, size_t n) const;
-private:
-	inline static Compare m_compare {};
-	std::vector<Ty> m_array;	//index begin with 1!
+	{ cpr(a, b) } -> std::convertible_to<bool>;
 };
 
-
-template<typename Ty, typename Compare>
-BinaryHeap<Ty, Compare>::BinaryHeap(size_t capacity) :
-	m_array(1)
+// compare (x, elememt), x is the inserted value
+template <typename Ty, Comparator<Ty> Comp>
+class binary_heap
 {
-	m_array.reserve(capacity);
-}
+public:
+	//Constructor
+	binary_heap() : m_array(1) { }
 
-template<typename Ty, typename Compare>
-BinaryHeap<Ty, Compare>::BinaryHeap(const std::vector<Ty> items) :
-	m_array(items.size()+1)
-{
-	std::move(items.begin(), items.end(), m_array.begin()+1);
-	build_heap();
-}
-
-template<typename Ty, typename Compare>
-bool BinaryHeap<Ty, Compare>::is_empty() const noexcept
-{
-	return size() == 0;
-}
-
-template<typename Ty, typename Compare>
-template<typename Ty_ref>
-void BinaryHeap<Ty, Compare>::insert(Ty_ref&& value)
-{
-	m_array.resize(size()+2);
-	percolate_up(size(), value);
-}
-
-template<typename Ty, typename Compare>
-void BinaryHeap<Ty, Compare>::delete_min()
-{
-	if(is_empty())
-		throw std::underflow_error {"cannot deleteM an empty heap!"};
-
-	m_array[1] = std::move(m_array[size()]);
-	m_array.pop_back();
-	percolate_down(1);
-}
-
-template<typename Ty, typename Compare>
-const Ty& BinaryHeap<Ty, Compare>::min() const
-{
-	if(is_empty())
-		throw std::out_of_range {"require items in empty heap"};
-
-	return m_array[1];
-}
-
-
-template<typename Ty, typename Compare>
-size_t BinaryHeap<Ty, Compare>::size() const noexcept
-{
-	return m_array.size()-1;
-}
-
-template<typename Ty, typename Compare>
-void BinaryHeap<Ty, Compare>::print_heap(std::ostream& os) const
-{
-	size_t node = 1;
-	os << "digraph G {\n";
-	print_node(os, node);
-	os << "}\n";
-}
-
-template<typename Ty, typename Compare>
-void BinaryHeap<Ty, Compare>::build_heap()
-{
-	for(size_t i = size()/2; i > 0; i--)
+	explicit binary_heap(const std::vector<Ty>& array):
+		m_array(array.size()+1)
 	{
-		percolate_down(i);
+		std::ranges::copy(array, m_array.begin()+1);
+		build_heap();
 	}
-}
 
-template<typename Ty, typename Compare>
-template<typename Ty_ref>
-void BinaryHeap<Ty, Compare>::percolate_up(size_t hole, Ty_ref&& x)
-{
-	while(hole != 1)
+	virtual ~binary_heap() = default;
+
+public:
+	//Accessor
+	[[nodiscard]] constexpr
+	bool empty() const noexcept
 	{
-		size_t parent = hole/2;
-		if(x < m_array[parent])
+		return size() == 0;
+	}
+
+	[[nodiscard]] constexpr
+	size_t size() const noexcept
+	{
+		return m_array.size() - 1;
+	}
+
+	[[nodiscard]] constexpr
+	const Ty& priority() const noexcept
+	{
+		return m_array[1];
+	}
+
+	//Modifier
+	template<typename Ty_ref>
+	requires std::is_same_v<Ty, std::decay_t<Ty_ref>>
+	void insert(Ty_ref&& value)
+	{
+		size_t backIdx { m_array.size() };
+		m_array.resize(backIdx + 1);
+		m_array[backIdx] = std::forward<Ty>(value);
+		
+		while(s_kCompare(value, parent_node(backIdx)))
 		{
-			m_array[hole] = std::move(m_array[parent]);
-			hole = hole/2;
+			std::swap(m_array[backIdx], parent_node(backIdx));
+			backIdx = parent(backIdx);
+			if (backIdx == 1)
+				break;
 		}
+	}
+
+	void delete_priority()
+	{
+		percolate_down(1);
+		m_array.resize(m_array.size()-1);
+	}
+
+	void clear()
+	{
+		m_array.clear();
+	}
+
+#ifdef DEBUG
+
+public:
+	void print(std::ostream& os)
+	{
+		os << "digraph G{\n";
+		if (size() == 1)
+			os << priority() << std::endl;
 		else
-			break;
+			print(1, os);
+		os << '}' << std::endl;
 	}
-	m_array[hole] = std::forward<Ty_ref>(x);
-}
 
-template<typename Ty, typename Compare>
-void BinaryHeap<Ty, Compare>::percolate_down(size_t hole)
-{
-	size_t bound = size()/2;
-	Ty tmp = std::move(m_array[hole]);
-	while(hole <= bound)
+	void print(size_t idx, std::ostream& os)
 	{
-		size_t child = hole*2;
-		if(child != size() && m_compare(m_array[child+1], m_array[child]))
-			++child;
-		if(m_compare(m_array[child], tmp))
+				
+		if (idx > size()/2)
+			return;
+
+		auto[c1, c2] = child(idx);
+
+		if (c1 < m_array.size())
 		{
-			m_array[hole] = std::move(m_array[child]);
+			os << std::format("\t{} -> {}\n", m_array[idx], m_array[c1]);
+			print(c1, os);
 		}
-		else	//right
-			break;
 
-		hole = child;
+		if (c2 < m_array.size())
+		{
+			os << std::format("\t{} -> {}\n", m_array[idx], m_array[c2]);
+			print(c2, os);
+		}
 	}
-	m_array[hole] = std::move(tmp);
-}
 
-template<typename Ty, typename Compare>
-void BinaryHeap<Ty, Compare>::print_node(std::ostream& os, size_t n) const
-{
-	size_t left = 2*n, right = 2*n + 1;
-	if(left <= size())
+#endif
+
+private:
+	//Method
+	[[nodiscard]] constexpr
+	size_t parent(size_t node) const noexcept
 	{
-		os << m_array[n] << " -> " << m_array[left] << "\n";
-		print_node(os, left);
+		return node / 2;
 	}
-	if(right <= size())
+	[[nodiscard]]
+	Ty& parent_node(size_t node) noexcept
 	{
-		os << m_array[n] << " -> " << m_array[right] << "\n";
-		print_node(os, right);
+		return m_array[parent(node)];
 	}
-}
+
+	[[nodiscard]] constexpr
+	std::pair<size_t, size_t> child(size_t node) const noexcept
+	{
+		return { node*2, node*2 + 1 };
+	}
+
+	void percolate_down(size_t idx)
+	{
+		const size_t limit { m_array.size()/2 };
+		const size_t backIdx { m_array.size() - 1 };
+		auto Ori { m_array[idx] };
+		while(idx < limit)
+		{
+			auto[c1, c2] = child(idx);
+			size_t sc = s_kCompare(m_array[c1], m_array[c2]) ? c1 : c2;
+			if (s_kCompare(m_array[backIdx], m_array[sc]))
+				break;
+			m_array[idx] = std::move(m_array[sc]);
+			idx = sc;
+		}
+		m_array[idx] = std::move(m_array[backIdx]);
+		m_array[m_array.size()-1] = std::move(Ori);
+	}
+
+	void build_heap()
+	{
+		size_t parent;
+		for(parent = m_array.size() / 2; parent >= 1; parent--)
+		{
+			percolate_down(parent);
+		}
+	}
+
+#ifdef DEBUG
+public:
+#else
+private:
+#endif
+	//Data member
+	inline const static Comp s_kCompare{};
+	std::vector<Ty> m_array;
+};

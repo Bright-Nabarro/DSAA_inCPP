@@ -1,0 +1,1 @@
+Always valid until element has changed.

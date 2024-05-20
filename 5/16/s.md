@@ -1,0 +1,3 @@
+In primitive interger switch syntax, interger value is directly map to a relative address array. Since the size of the address array is related to the consequence case value.If a case value deviate too much, the compiler switch it into a normal conditional judge statement.
+
+If switch can access a string type value as a index, we can hash it into a interger. If we use a traditional string hash method, the result will be fairly evenly distributed between 0 and HASH_MAX(generally a big numer). By examining the number of cases, we can then construct a hash table accordingly. It's important to note that the size of the hash table is fixed, and the scenario where a hash collision occurs should be avoided.

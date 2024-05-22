@@ -17,7 +17,7 @@ public:
 	using binary_heap<Ty, std::less<Ty>>::binary_heap;
 	[[nodiscard]] constexpr
 	const Ty& min()  const noexcept
-	{ return binary_heap<Ty,  std::less<Ty>>::priority(); }
+	{ return binary_heap<Ty,  std::less<Ty>>::top(); }
 };
 
 void test_ini()
@@ -32,7 +32,7 @@ void test_insert()
 	for (int i = 1; i <= 50; i++)
 	{
 		assert(b1.size() == i-1);
-		b1.insert(i);
+		b1.push(i);
 		assert(b1.size() == i);
 		assert(b1.min() == 1);
 	}
@@ -42,7 +42,7 @@ void test_insert()
 	Bh<int> b2;
 	for (int i = 50; i > 0; i--)
 	{
-		b2.insert(i);
+		b2.push(i);
 		assert(b2.size() == 51-i);
 		assert(b2.min() == i);
 	}
@@ -60,7 +60,7 @@ void test_insert()
 		int value = dist(gen);
 		if (value < min3)
 			min3 = value;
-		b3.insert(value);
+		b3.push(value);
 	}
 	assert(b3.min() == min3);
 	assert(b3.size() == 500);
@@ -71,13 +71,13 @@ void test_remove()
 	Bh<int> b1;
 	for(int i = 0; i < 50; i++)
 	{
-		b1.insert(i);
+		b1.push(i);
 	}
 
 	for(int i = 0; i < 50; i++)
 	{
 		assert(b1.min() == i);
-		b1.delete_priority();
+		b1.pop();
 		assert(b1.size() == 49-i);
 	}
 	
@@ -92,12 +92,12 @@ void test_remove()
 	{
 		int value {dist1(gen)};
 		q2.push(value);
-		b2.insert(value);
+		b2.push(value);
 	}
 	for(int i = 0; i < 1000; i++)
 	{
 		//assert(b2.min() == q2.top());
-		b2.delete_priority();
+		b2.pop();
 		q2.pop();
 		assert(b2.size() == 999-i);
 	}
@@ -109,13 +109,13 @@ void test_remove()
 	{
 		int value {dist2(gen)};
 		q3.push(value);
-		b3.insert(value);
+		b3.push(value);
 	}
 	
 	for(int i = 0; i < 1'000; i++)
 	{	
 		assert(b3.min() == q3.top());
-		b3.delete_priority();
+		b3.pop();
 		q3.pop();
 		assert(b3.size() == 999-i);
 	}
@@ -155,11 +155,11 @@ void test_all()
 	Bh<int> b;
 	auto random_view = views::iota(0, 1000)
 					 | views::transform([&](int) { return dist1(gen); });
-	ranges::for_each(random_view, [&](int n){ q.push(n); b.insert(n); });
+	ranges::for_each(random_view, [&](int n){ q.push(n); b.push(n); });
 	auto ass = [&](int) {
 		assert(q.top() == b.min());
 		q.pop();
-		b.delete_priority();
+		b.pop();
 	};
 	ranges::for_each(views::iota(0, 1000), ass);
 }

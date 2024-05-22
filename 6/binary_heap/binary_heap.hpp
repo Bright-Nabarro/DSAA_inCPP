@@ -46,7 +46,7 @@ public:
 	}
 
 	[[nodiscard]] constexpr
-	const Ty& priority() const noexcept
+	const Ty& top() const noexcept
 	{
 		return m_array[1];
 	}
@@ -54,7 +54,7 @@ public:
 	//Modifier
 	template<typename Ty_ref>
 	requires std::is_same_v<Ty, std::decay_t<Ty_ref>>
-	void insert(Ty_ref&& value)
+	void push(Ty_ref&& value)
 	{
 		size_t backIdx { m_array.size() };
 		m_array.resize(backIdx + 1);
@@ -69,7 +69,7 @@ public:
 		}
 	}
 
-	void delete_priority()
+	void pop()
 	{
 		percolate_down(1);
 		m_array.resize(m_array.size()-1);
@@ -87,7 +87,7 @@ public:
 	{
 		os << "digraph G{\n";
 		if (size() == 1)
-			os << priority() << std::endl;
+			os << top() << std::endl;
 		else
 			print(1, os);
 		os << '}' << std::endl;

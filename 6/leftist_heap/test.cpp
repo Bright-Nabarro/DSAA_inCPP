@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <sstream>
 #include <queue>
 #include <algorithm>
 #include <ranges>
@@ -119,9 +120,39 @@ void test_merge()
 	);
 
 	h3.merge(h4);
-	h3.print(cout);
-	cout << "\n\n\n";
-	h3.print_npl(cout);
+	//h3.print(cout);
+	//cout << "\n\n\n";
+	//h3.print_npl(cout);
+}
+
+void test_clone()
+{
+	ostringstream ossm1, ossm2;
+	IntHeap h1;
+	ranges::for_each(views::iota(1, 20), [&](int n) {
+			h1.push(n);
+		}
+	);
+	IntHeap h2{h1};
+	h1.print(ossm1);
+	h2.print(ossm2);
+	assert(ossm1.str() == ossm2.str());
+
+	ossm1.clear();
+	ossm2.clear();
+	static random_device rd;
+	static mt19937 gen {rd()};
+	auto v = views::iota(1, 100);
+	vector<int> arr {v.begin(), v.end()};
+	ranges::shuffle(arr, gen);
+
+	IntHeap h3;
+	ranges::for_each(arr, [&](int n) { h3.push(n); });
+	h3.print(ossm1);
+	IntHeap h4;
+	h4 = h3;
+	h4.print(ossm2);
+	assert(ossm1.str() == ossm2.str());
 }
 
 int main()
@@ -130,5 +161,6 @@ int main()
 	test_push();
 	test_pop();
 	test_merge();
+	test_clone();
 	cout << "o((>ω< ))o\n";
 }

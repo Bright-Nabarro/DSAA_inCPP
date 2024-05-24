@@ -43,10 +43,15 @@ public:
 	leftist_heap(): root{nullptr} { }
 	leftist_heap(const leftist_heap& rhs)
 	{
+		root = clone(rhs.root);
 	}
-	leftist_heap& operator= (const leftist_heap& rhs);
-	leftist_heap(leftist_heap&& rhs) = default;
-	leftist_heap& operator= (leftist_heap&& rhs) = default;
+	leftist_heap& operator= (const leftist_heap& rhs)
+	{
+		root = clone(rhs.root);
+		return *this;
+	}
+	leftist_heap(leftist_heap&& rhs) noexcept = default;
+	leftist_heap& operator= (leftist_heap&& rhs) noexcept = default;
 	virtual ~leftist_heap() = default;
 	//leftist_heap& operator=(
 public:
@@ -91,23 +96,22 @@ public:
 		if (root == nullptr)
 			return;
 		
-		static size_t counter {0};
 		os << "digraph V {\n";
 		if (root->left == nullptr && root->right == nullptr)
 			os << std::format("{}\n", root->m_value);
 		else
-			print(root, os, counter);
+			print(root, os);
 		os << "}\n";
 	}
 
-	void print(cuptrV node, std::ostream& os, size_t& counter) const
+	void print(cuptrV node, std::ostream& os) const
 	{
 		if (node == nullptr)
 			return;
 		if (node->left != nullptr)
 		{
 			os << std::format("n_{} -> n_{}\n", node->m_value, node->left->m_value);
-			print(node->left, os, counter);
+			print(node->left, os);
 		}
 		else
 			os << std::format("n_{} -> NULL{}\n", node->m_value, counter++);
@@ -115,7 +119,7 @@ public:
 		if (node->right != nullptr)
 		{
 			os << std::format("n_{} -> n_{}\n", node->m_value, node->right->m_value);
-			print(node->right, os, counter);
+			print(node->right, os);
 		}
 		else
 			os << std::format("n_{} -> NULL{}\n", node->m_value, counter++);
@@ -142,7 +146,8 @@ public:
 		print_npl(node->left, os, counter);
 		print_npl(node->right, os, counter);
 	}
-
+	
+	mutable size_t counter{0};
 #endif
 
 private:
@@ -180,7 +185,7 @@ private:
 	{
 		if (vtr == nullptr)
 			return nullptr;
-		uptr newNode = std::make_unique(vtr->m_value, clone(vtr->left),
+		uptr newNode = std::make_unique<Node>(vtr->m_value, clone(vtr->left),
 						 				clone(vtr->right), vtr->npl);
 		return newNode;
 	}

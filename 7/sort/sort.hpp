@@ -17,3 +17,21 @@ void insertion_sort(std::span<Ty> arr)
 	}
 }
 
+template<typename Ty>
+void shell_sort(std::span<Ty> arr)
+{
+	for(int gap { arr.size()/2 }; gap > 0; gap /= 2)
+	{
+		for(int i{gap-1}; i < arr.size(); i++)
+		{
+			Ty temp { std::move(arr[i]) };
+			int j { i-gap };
+			while(j >= 0 && temp < arr[j])
+			{
+				arr[j] = std::move(temp);
+				j -= gap;
+			}
+			arr[j] = std::move(temp);
+		}
+	}
+}

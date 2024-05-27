@@ -39,7 +39,13 @@ void shell_sort(std::span<Ty> arr)
 }
 
 template<typename Ty>
-void heap_sort(std::span<Ty> arr)
+void heap_sort(std::vector<int>& arr)
 {
-	std::vector<int> arrC { arr };
+	binary_heap<int, std::less<int>> bh { arr };
+	arr.clear();
+	while(!bh.empty())
+	{
+		arr.push_back(bh.top());
+		bh.pop();
+	}
 }

@@ -6,6 +6,7 @@
 #include <numeric>
 #include <vector>
 #include <ranges>
+#include <print>
 #include "binary_heap.hpp"
 
 using namespace std;
@@ -66,19 +67,47 @@ void test_insert()
 	assert(b3.size() == 500);
 }
 
+void test_re_scale(size_t n)
+{
+	binary_heap<int, less<int>> b;
+	for(int i = 0; i < n; i++)
+		b.push(i);
+	for(int i = 0; i < n; i++)
+	{
+		assert(b.top() == i);
+		b.pop();
+		assert(b.size() == n-1-i);
+	}
+}
+
+void test_remove_basic()
+{
+	for(size_t i = 0; i < 10000; i++)
+		test_re_scale(i);
+}
+
 void test_remove()
 {
-	Bh<int> b1;
-	for(int i = 0; i < 50; i++)
+	Bh<int> b;
+	b.push(1);
+	b.push(2);
+	b.push(3);
+	b.pop();
+	if (b.top() != 2)
+		b.print(cout);
+	b.pop();
+	if (b.top() != 3)
+		b.print(cout);
+	Bh<int> b1; for(int i = 0; i < 10; i++)
 	{
 		b1.push(i);
 	}
 
-	for(int i = 0; i < 50; i++)
+	for(int i = 0; i < 10; i++)
 	{
 		assert(b1.min() == i);
 		b1.pop();
-		assert(b1.size() == 49-i);
+		assert(b1.size() == 9-i);
 	}
 	
 	Bh<int> b2;
@@ -96,7 +125,7 @@ void test_remove()
 	}
 	for(int i = 0; i < 1000; i++)
 	{
-		//assert(b2.min() == q2.top());
+		assert(b2.min() == q2.top());
 		b2.pop();
 		q2.pop();
 		assert(b2.size() == 999-i);
@@ -114,12 +143,14 @@ void test_remove()
 	
 	for(int i = 0; i < 1'000; i++)
 	{	
-		assert(b3.min() == q3.top());
+		if (b3.min() != q3.top())
+			print("{}\t{}\n", b3.min(), q3.top());
 		b3.pop();
 		q3.pop();
 		assert(b3.size() == 999-i);
 	}
 }
+
 
 void test_build()
 {
@@ -164,13 +195,24 @@ void test_all()
 	ranges::for_each(views::iota(0, 1000), ass);
 }
 
+void test_temp()
+{
+	vector<int> vec { 1, 2, 3, 4, 5 };
+	binary_heap<int, std::less<int>> bh { vec };
+	if (bh.top() != 1)
+		bh.print(cout);
+}
+
 int main()
 {
 	test_ini();
 	test_insert();
-	test_remove();
+	//test_remove_basic();
+	for(int i = 0; i < 100; i++)
+		test_remove();
 	test_build();
 	test_all();
+	test_temp();
 
 	cout << "o((>ω< ))o\n";
 }

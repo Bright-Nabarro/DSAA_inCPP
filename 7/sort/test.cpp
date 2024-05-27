@@ -18,7 +18,12 @@ void print(span<int> arr)
 	cout << endl;
 }
 
-void test(function<void(std::span<int>)> sort_alg)
+template<typename Func, typename Container>
+concept Sortablewith = requires(Func f, Container c) {
+	{ f(std::declval<Container>()) };
+};
+
+void test(auto sort_alg)
 {
 	vector<int> arr1 { 1, 2, 3, 4, 5 };
 	const auto arrC1 { arr1 };
@@ -47,7 +52,7 @@ void test(function<void(std::span<int>)> sort_alg)
 	assert(arrC4 == arr4);
 }
 
-void test_basic(function<void(std::span<int>)> sort_alg)
+void test_basic(auto sort_alg)
 {
 	vector<int> arr1 { 1, 2, 3, 4, 5 };
 	auto arrC1 { arr1 };
@@ -84,4 +89,5 @@ int main()
 {
 	test(insertion_sort<int>);
 	test(shell_sort<int>);
+	test_basic(heap_sort<int>);
 }

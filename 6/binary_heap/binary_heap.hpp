@@ -1,12 +1,14 @@
 #pragma once
+#define DEBUG
 #include <vector>
 #include <type_traits>
 #include <utility>
+#include <cmath>
+#ifdef DEBUG
 #include <ostream>
 #include <format>
+#endif
 #include <algorithm>
-
-#define DEBUG
 
 template<typename C, typename Ty>
 concept Comparator = requires(C cpr, Ty a, Ty b)
@@ -71,8 +73,9 @@ public:
 
 	void pop()
 	{
-		percolate_down(1);
+		m_array[1] = std::move(m_array.back());
 		m_array.resize(m_array.size()-1);
+		percolate_down(1);
 	}
 
 	void clear()
@@ -137,20 +140,26 @@ private:
 
 	void percolate_down(size_t idx)
 	{
-		const size_t limit { m_array.size()/2 };
+		const size_t limit = ceil(static_cast<double>(m_array.size())/2);
 		const size_t backIdx { m_array.size() - 1 };
-		auto Ori { m_array[idx] };
+		auto Ori { std::move(m_array[idx]) };
 		while(idx < limit)
 		{
 			auto[c1, c2] = child(idx);
-			size_t sc = s_kCompare(m_array[c1], m_array[c2]) ? c1 : c2;
-			if (s_kCompare(m_array[backIdx], m_array[sc]))
+			size_t pChild;
+			if (c2 <= backIdx && s_kCompare(m_array[c2], m_array[c1]))
+				pChild = c2;
+			else
+				pChild = c1;
+
+			if (s_kCompare(m_array[pChild], Ori))
+				m_array[idx] = std::move(m_array[pChild]);
+			else
 				break;
-			m_array[idx] = std::move(m_array[sc]);
-			idx = sc;
+
+			idx = pChild;
 		}
-		m_array[idx] = std::move(m_array[backIdx]);
-		m_array[m_array.size()-1] = std::move(Ori);
+		m_array[idx] = std::move(Ori);
 	}
 
 	void build_heap()

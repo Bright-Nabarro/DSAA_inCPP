@@ -1,7 +1,0 @@
-InlayHints:
-  Enabled: No
-  ParameterNames: No
-  DeducedTypes: Yes
-  
-CompileFlags:
-  Add: [-std=c++23]

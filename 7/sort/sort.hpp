@@ -1,5 +1,6 @@
 #pragma once
 #include <span>
+#include <cassert>
 #include "binary_heap.hpp"
 
 template<typename Ty>
@@ -39,9 +40,9 @@ void shell_sort(std::span<Ty> arr)
 }
 
 template<typename Ty>
-void heap_sort(std::vector<int>& arr)
+void heap_sort(std::vector<Ty>& arr)
 {
-	binary_heap<int, std::less<int>> bh { arr };
+	binary_heap<Ty, std::less<int>> bh { arr };
 	arr.clear();
 	while(!bh.empty())
 	{
@@ -49,3 +50,59 @@ void heap_sort(std::vector<int>& arr)
 		bh.pop();
 	}
 }
+
+template<typename Ty>
+void merge(std::span<Ty> arr, std::vector<Ty>& tmpArr, size_t leftBeg, size_t center, size_t rightEnd)
+{
+	const size_t leftEnd { center };
+	const size_t rightBeg { center+1 };
+	const size_t numElements { rightEnd - leftBeg + 1 };
+
+	size_t counter{0};
+	size_t leftPos, rightPos;
+	for(leftPos = leftBeg, rightPos = rightBeg;
+		leftPos <= leftEnd && rightPos <= rightEnd;
+	   )
+	{
+		if (arr[leftPos] < arr[rightPos])
+			tmpArr[counter++] = std::move(arr[leftPos++]);
+		else
+			tmpArr[counter++] = std::move(arr[rightPos++]);
+	}
+	while(leftPos <= leftEnd)
+	{
+		assert(rightPos > rightEnd);
+		tmpArr[counter++] = std::move(arr[leftPos++]);
+	}
+	while(rightPos <= rightEnd)
+	{
+		tmpArr[counter++] = std::move(arr[rightPos++]);
+	}
+
+	size_t pos {leftBeg};
+	for(size_t i{0}; i < numElements; i++)
+	{
+		arr[pos++] = std::move(tmpArr[i]);
+	}
+}
+
+template<typename Ty>
+void merge_sort(std::span<Ty> arr, std::vector<Ty>& tmpArr, size_t left, size_t right)
+{
+	if (left >= right)
+		return;
+
+	size_t center = (left + right)/2;
+	merge_sort(arr, tmpArr, left, center);
+	merge_sort(arr, tmpArr, center+1, right);
+	merge(arr, tmpArr, left, center, right);
+};
+
+template<typename Ty>
+void merge_sort(std::span<Ty> arr)
+{
+	std::vector<Ty> tmpArr(arr.size());
+	merge_sort(arr, tmpArr, 0, arr.size()-1);
+}
+
+

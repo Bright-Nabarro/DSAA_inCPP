@@ -1,6 +1,5 @@
 #include <cassert>
 #include <vector>
-#include <functional>
 #include <algorithm>
 #include <ranges>
 #include <iostream>
@@ -85,9 +84,14 @@ void test_basic(auto sort_alg)
 	}
 }
 
+template<typename Ty>
+using fp = void(*)(span<Ty>);
+
 int main()
 {
 	test(insertion_sort<int>);
 	test(shell_sort<int>);
-	test_basic(heap_sort<int>);
+	test(heap_sort<int>);
+
+	test(static_cast<fp<int>>(merge_sort<int>));
 }

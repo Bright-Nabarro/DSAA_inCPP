@@ -7,6 +7,8 @@
 #include <vector>
 #include <ranges>
 #include <print>
+
+#define DEBUG
 #include "binary_heap.hpp"
 
 using namespace std;

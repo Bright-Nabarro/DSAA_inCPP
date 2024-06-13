@@ -1,5 +1,4 @@
 #pragma once
-#define DEBUG
 #include <vector>
 #include <type_traits>
 #include <utility>
@@ -17,7 +16,7 @@ concept Comparator = requires(C cpr, Ty a, Ty b)
 };
 
 // compare (x, elememt), x is the inserted value
-template <typename Ty, Comparator<Ty> Comp>
+template <typename Ty, Comparator<Ty> Comp = std::less<Ty>>
 class binary_heap
 {
 public:
@@ -60,7 +59,7 @@ public:
 	{
 		size_t backIdx { m_array.size() };
 		m_array.resize(backIdx + 1);
-		m_array[backIdx] = std::forward<Ty>(value);
+		m_array[backIdx] = std::forward<Ty_ref>(value);
 		
 		while(s_kCompare(value, parent_node(backIdx)))
 		{

@@ -27,7 +27,7 @@ public:
 		m_adjList[std::forward<TyRef>(value)];
 	}
 
-	void add_edge(const Ty& v1, const Ty& v2, Weight weight)
+	virtual void add_edge(const Ty& v1, const Ty& v2, Weight weight)
 	{
 		auto [ itr1, itr2 ] { check_vecs(v1, v2) };
 		//特别注意，这里的引用包装需要引用到键本身
@@ -92,7 +92,7 @@ protected:	//impl func
 		return std::pair{ itr1, itr2 };
 	}
 protected: 	//constant value, type
-	inline static constexpr size_t INF { std::numeric_limits<size_t>::max() };
+	inline static constexpr Weight INF { std::numeric_limits<Weight>::max() };
 	struct EdgeRefHash
 	{
 		size_t operator()(const std::pair<std::reference_wrapper<const Ty>, size_t>& ref) const

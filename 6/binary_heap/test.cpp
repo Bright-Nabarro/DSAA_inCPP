@@ -10,6 +10,7 @@
 
 #define DEBUG
 #include "binary_heap.hpp"
+#undef DEBUG
 
 using namespace std;
 
@@ -205,6 +206,96 @@ void test_temp()
 		bh.print(cout);
 }
 
+
+// new test
+struct s1
+{
+	int a;
+	int b;
+
+	[[nodiscard]]
+	auto operator<=> (const s1& rhs) const
+	{
+		return a + b <=> rhs.a + rhs.b;
+	}
+	[[nodiscard]]
+	bool operator== (const s1& rhs) const
+	{
+		return a + b == rhs.a + rhs.b;
+	}
+};
+
+
+void test_emplace(bool needDisplay = false)
+{
+	binary_heap<s1> b1;
+	b1.emplace(1, 1);
+	b1.emplace(2, 1);
+
+	while(!b1.empty())
+	{
+		if (needDisplay)
+			println("a: {}, b: {}", b1.top().a, b1.top().b);
+		b1.pop();
+	}
+
+	binary_heap<s1> b2;
+	priority_queue<s1, vector<s1>, greater<s1>> q2;
+	static mt19937 gen { random_device{}() };
+	uniform_int_distribution dist { 1, 100 };
+
+	for(size_t i = 0; i < 1000; i++)
+	{
+		int a { dist(gen) };
+		int b { dist(gen) };
+
+		b2.emplace(a, b);
+		q2.emplace(a, b);
+	}
+	while(!q2.empty())
+	{
+		assert(q2.size() == b2.size());
+		assert(b2.top() == q2.top());
+		q2.pop();
+		b2.pop();
+	}
+}
+
+struct s2
+{
+	int a;
+	bool b;
+};
+
+void test_cpr_ini(bool needDisplay = false)
+{
+	auto cpr = [](const s2& lhs, const s2& rhs) { 
+		if (lhs.b == rhs.b)
+			return lhs.a < rhs.b;
+		return lhs.a < rhs.a;
+	};
+	
+	binary_heap<s2, decltype(cpr)> h1{ cpr };
+	h1.emplace(1, true);
+	h1.emplace(2, false);
+
+	while (!h1.empty())
+	{
+		if (needDisplay)
+			println("{} {}", h1.top().a, h1.top().b);
+		h1.pop();
+	}
+}
+
+void test_find(bool needDisplay = false)
+{
+	
+}
+
+void test_erase(bool needDisplay = false)
+{
+}
+
 int main()
 {
 	test_ini();
@@ -215,6 +306,12 @@ int main()
 	test_build();
 	test_all();
 	test_temp();
+
+	//new method
+	test_emplace();
+	test_cpr_ini();
+	test_find(true);
+	test_erase();
 
 	cout << "o((>ω< ))o\n";
 }
